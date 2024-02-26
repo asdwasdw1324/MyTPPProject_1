@@ -6,6 +6,9 @@
 *.lo
 *.o
 *.obj
+*.uasset
+*.umap
+
 
 # Precompiled Headers
 *.gch
@@ -72,3 +75,5 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+*.uasset
+Content/ThirdPerson/Blueprints/BP_ThirdPersonCharacter.uasset

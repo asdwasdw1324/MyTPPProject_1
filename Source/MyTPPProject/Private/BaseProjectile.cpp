@@ -102,7 +102,7 @@ void ABaseProjectile::Explode_Implementation()
 
 		UGameplayStatics::PlayWorldCameraShake(this, CameraShakeStruct.ImpactShake, GetActorLocation(), CameraShakeStruct.ImpactShakeInnerRadius, CameraShakeStruct.ImpactShakeOuterRadius);
 
-		//Destroy();
+		Destroy();
 	}
 }
 

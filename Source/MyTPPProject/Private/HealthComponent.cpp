@@ -28,7 +28,7 @@ void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	OnHealthChanged.Broadcast(nullptr, this, MaxHealth, 0.0f);
+	//OnHealthChanged.Broadcast(nullptr, this, MaxHealth, 0.0f);
 
 	AActor* ComponentOwner = GetOwner();
 	if (ComponentOwner)
@@ -40,6 +40,7 @@ void UHealthComponent::BeginPlay()
 	
 }
 
+// Apply damage by base projectile
 bool UHealthComponent::ApplyHealthChange(float Delta)
 {
 	if (Delta <= 0 || ApplyGameEnd() || !GetWorld())
@@ -61,6 +62,7 @@ bool UHealthComponent::ApplyHealthChange(float Delta)
 	return true;
 }
 
+// Judge if the character health decrease to zero
 bool UHealthComponent::ApplyGameEnd()
 {
 	if (FMath::IsNearlyZero(Health))
@@ -79,6 +81,7 @@ bool UHealthComponent::ApplyGameEnd()
 	}
 }
 
+// Apply damage by radius area
 void UHealthComponent::OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	if (Damage <= 0 || ApplyGameEnd() || !GetWorld())
@@ -89,6 +92,7 @@ void UHealthComponent::OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage,
 
 	if (ApplyGameEnd())
 	{
+		//AddDynamic on the character execute OnDeath function
 		OnDeath.Broadcast();
 	}
 	else if (HealthStruct.FAutoHeal)

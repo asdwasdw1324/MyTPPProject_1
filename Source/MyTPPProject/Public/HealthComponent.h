@@ -38,7 +38,7 @@ public:
 	// Sets default values for this component's properties
 	UHealthComponent();
 
-		UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Health")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Health")
 	float Health;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Health")
