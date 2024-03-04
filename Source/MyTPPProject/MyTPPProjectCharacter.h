@@ -13,6 +13,7 @@ class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
 class UHealthComponent;
+class UAnimMontage;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -45,8 +46,15 @@ class AMyTPPProjectCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* NormalAttackAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* ChargedAttackAction;
+
 	UPROPERTY(EditDefaultsOnly, Category = Attribute)
 	TObjectPtr<UHealthComponent> TPPHealthComponent;
+
 
 public:
 	AMyTPPProjectCharacter();
@@ -59,6 +67,20 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+	/*Called for Normal Attack, Implement in the Blueprint*/
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = Attack)
+	void NormalAttack();
+
+	/*Normal attack montage*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attack)
+	TObjectPtr<UAnimMontage> NorAttackMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Attack)
+	bool IsNormalAttack = false;
+
+	UFUNCTION(BlueprintCallable, Category = Attack)
+	void SetIsNormalAttack();
 			
 
 protected:
@@ -67,6 +89,7 @@ protected:
 	
 	// To add mapping context
 	virtual void BeginPlay();
+
 
 public:
 	/** Returns CameraBoom subobject **/

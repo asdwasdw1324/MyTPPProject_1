@@ -28,7 +28,7 @@ void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//OnHealthChanged.Broadcast(nullptr, this, MaxHealth, 0.0f);
+	OnHealthChanged.Broadcast(nullptr, this, MaxHealth, 0.0f);
 
 	AActor* ComponentOwner = GetOwner();
 	if (ComponentOwner)
