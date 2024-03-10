@@ -65,6 +65,7 @@ public:
 	float GetHealth() const {return Health;}
 
 	//Set new health value
+	UFUNCTION(BlueprintCallable)
 	void SetHealth(float NewHealth);
 
 	UFUNCTION(Blueprintcallable, Category = "Damage")

@@ -14,6 +14,7 @@ class UInputAction;
 struct FInputActionValue;
 class UHealthComponent;
 class UAnimMontage;
+class UPowerComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -51,9 +52,6 @@ class AMyTPPProjectCharacter : public ACharacter
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* ChargedAttackAction;
-
-	UPROPERTY(EditDefaultsOnly, Category = Attribute)
-	TObjectPtr<UHealthComponent> TPPHealthComponent;
 
 
 public:
@@ -100,6 +98,15 @@ public:
 	UFUNCTION()
 	void OnHealthChangeFunc(AActor* InstigatorActor, UHealthComponent* OwningComp, float NewHealth, float Delta);
 
+	UFUNCTION()
+	void OnPowerChangeFunc(AActor* InstigatorActor, UPowerComponent* OwningComp, float NewPower, float Delta);
+
 	virtual void PostInitializeComponents() override;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Attribute)
+	TObjectPtr<UPowerComponent> TPPPowerComponent;
+
+	UPROPERTY(EditDefaultsOnly, Category = Attribute)
+	TObjectPtr<UHealthComponent> TPPHealthComponent;
 };
 

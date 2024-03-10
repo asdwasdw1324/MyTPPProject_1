@@ -15,11 +15,10 @@ UHealthComponent::UHealthComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
 
-	SetHealth(MaxHealth);
+	Health = MaxHealth;
 
 	SetIsReplicatedByDefault(true);
 
-	// ...
 }
 
 
@@ -28,7 +27,7 @@ void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	OnHealthChanged.Broadcast(nullptr, this, MaxHealth, 0.0f);
+	SetHealth(MaxHealth);
 
 	AActor* ComponentOwner = GetOwner();
 	if (ComponentOwner)
@@ -36,7 +35,6 @@ void UHealthComponent::BeginPlay()
 		ComponentOwner->OnTakeAnyDamage.AddDynamic(this, &UHealthComponent::OnTakeAnyDamageHandle);
 	}
 
-	// ...
 	
 }
 
@@ -115,9 +113,10 @@ void UHealthComponent::HealUpdate()
 
 void UHealthComponent::SetHealth(float NewHealth)
 {
+	float LastHealth = GetHealth();
 	Health = FMath::Clamp(NewHealth, 0.0f, MaxHealth);
-	//float Deltahealth = Health - NewHealth;
+	float DeltaHealth = LastHealth - Health;
 
 	OnDamageTaking.Broadcast(Health);
-	//OnHealthChanged.Broadcast(nullptr, this, Health, Deltahealth);
+	OnHealthChanged.Broadcast(nullptr, this, Health, DeltaHealth);
 }

@@ -13,6 +13,7 @@
 #include "HealthComponent.h"
 #include "Animation\AnimMontage.h"
 #include "Animation\AnimInstance.h"
+#include "PowerComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -60,6 +61,8 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 	TPPHealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
 	TPPHealthComponent->OnHealthChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnHealthChangeFunc);
 
+	TPPPowerComponent = CreateDefaultSubobject<UPowerComponent>(TEXT("PowerComp"));
+	TPPPowerComponent->OnPowerChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnPowerChangeFunc);
 }
 
 void AMyTPPProjectCharacter::BeginPlay()
@@ -86,10 +89,21 @@ void AMyTPPProjectCharacter::OnHealthChangeFunc(AActor* InstigatorActor, UHealth
 {
 	if (GEngine)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("%s"), *GetNameSafe(InstigatorActor)));
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString::Printf(TEXT("%s"), *GetNameSafe(OwningComp)));
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Orange, FString::Printf(TEXT("%f"), NewHealth)); 
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("%f"), Delta));
+		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("%s"), *GetNameSafe(InstigatorActor)));
+		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString::Printf(TEXT("%s"), *GetNameSafe(OwningComp)));
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("Health: %f"), NewHealth)); 
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("DeltaHealth: %f"), Delta));
+	}
+}
+
+void AMyTPPProjectCharacter::OnPowerChangeFunc(AActor* InstigatorActor, UPowerComponent* OwningComp, float NewPower, float Delta)
+{
+	if (GEngine)
+	{
+		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("%s"), *GetNameSafe(InstigatorActor)));
+		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString::Printf(TEXT("%s"), *GetNameSafe(OwningComp)));
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("Power: %f"), NewPower));
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("DeltaPower: %f"), Delta));
 	}
 }
 
@@ -97,6 +111,7 @@ void AMyTPPProjectCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 	//TPPHealthComponent->OnHealthChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnHealthChangeFunc);
+	//TPPPowerComponent->OnPowerChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnPowerChangeFunc);
 }
 
 //////////////////////////////////////////////////////////////////////////
