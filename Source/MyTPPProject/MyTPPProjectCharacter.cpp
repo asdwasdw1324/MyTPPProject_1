@@ -14,8 +14,10 @@
 #include "Animation\AnimMontage.h"
 #include "Animation\AnimInstance.h"
 #include "PowerComponent.h"
+#include "PropInteractComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
+DEFINE_LOG_CATEGORY_STATIC(TPPCharacterLog, All, All);
 
 //////////////////////////////////////////////////////////////////////////
 // AMyTPPProjectCharacter
@@ -61,8 +63,12 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 	TPPHealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
 	TPPHealthComponent->OnHealthChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnHealthChangeFunc);
 
+	//Create Power component for the character, bind power initialization function when health changed
 	TPPPowerComponent = CreateDefaultSubobject<UPowerComponent>(TEXT("PowerComp"));
 	TPPPowerComponent->OnPowerChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnPowerChangeFunc);
+
+	//Create interact component for the character
+	WuKongInteractComponent = CreateDefaultSubobject<UPropInteractComponent>(TEXT("InteractComp"));
 }
 
 void AMyTPPProjectCharacter::BeginPlay()
@@ -91,8 +97,9 @@ void AMyTPPProjectCharacter::OnHealthChangeFunc(AActor* InstigatorActor, UHealth
 	{
 		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("%s"), *GetNameSafe(InstigatorActor)));
 		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString::Printf(TEXT("%s"), *GetNameSafe(OwningComp)));
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("Health: %f"), NewHealth)); 
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("DeltaHealth: %f"), Delta));
+		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, FString::Printf(TEXT("Health: %f"), NewHealth)); 
+		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, FString::Printf(TEXT("DeltaHealth: %f"), Delta));
+		UE_LOG(TPPCharacterLog, Warning, TEXT("Health: %f"), NewHealth);
 	}
 }
 
@@ -102,8 +109,9 @@ void AMyTPPProjectCharacter::OnPowerChangeFunc(AActor* InstigatorActor, UPowerCo
 	{
 		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("%s"), *GetNameSafe(InstigatorActor)));
 		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString::Printf(TEXT("%s"), *GetNameSafe(OwningComp)));
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("Power: %f"), NewPower));
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("DeltaPower: %f"), Delta));
+		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, FString::Printf(TEXT("Power: %f"), NewPower));
+		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, FString::Printf(TEXT("DeltaPower: %f"), Delta));
+		UE_LOG(TPPCharacterLog, Warning, TEXT("DeltaPower: %f"), Delta);
 	}
 }
 
@@ -112,6 +120,14 @@ void AMyTPPProjectCharacter::PostInitializeComponents()
 	Super::PostInitializeComponents();
 	//TPPHealthComponent->OnHealthChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnHealthChangeFunc);
 	//TPPPowerComponent->OnPowerChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnPowerChangeFunc);
+}
+
+void AMyTPPProjectCharacter::PrimaryInteract()
+{
+	if (WuKongInteractComponent)
+	{
+		WuKongInteractComponent->PrimaryInteract();
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -136,6 +152,9 @@ void AMyTPPProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 		EnhancedInputComponent->BindAction(NormalAttackAction,ETriggerEvent::Started, this, &AMyTPPProjectCharacter::NormalAttack);
 
 		//ChargedAttack is bind in the Blueprint
+
+		//Interact
+		EnhancedInputComponent->BindAction(Interact_Prop, ETriggerEvent::Started, this, &AMyTPPProjectCharacter::PrimaryInteract);
 	} 
 	else
 	{

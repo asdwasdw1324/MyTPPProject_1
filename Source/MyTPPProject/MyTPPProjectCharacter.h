@@ -15,6 +15,7 @@ struct FInputActionValue;
 class UHealthComponent;
 class UAnimMontage;
 class UPowerComponent;
+class UPropInteractComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -50,8 +51,11 @@ class AMyTPPProjectCharacter : public ACharacter
 	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* NormalAttackAction;
 
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	//UInputAction* ChargedAttackAction;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* ChargedAttackAction;
+	UInputAction* Interact_Prop;
 
 
 public:
@@ -106,7 +110,13 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Attribute)
 	TObjectPtr<UPowerComponent> TPPPowerComponent;
 
-	UPROPERTY(EditDefaultsOnly, Category = Attribute)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Attribute)
 	TObjectPtr<UHealthComponent> TPPHealthComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Interact)
+	TObjectPtr<UPropInteractComponent> WuKongInteractComponent;
+
+	UFUNCTION()
+	void PrimaryInteract();
 };
 

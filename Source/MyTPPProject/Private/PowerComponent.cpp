@@ -59,7 +59,7 @@ float UPowerComponent::SetPower(float NewPower)
 {
 	float LastPower = GetPower();
 	Power = FMath::Clamp(NewPower, 0.0f, MaxPower);
-	float DeltaPower = LastPower - Power;
+	float DeltaPower = Power - LastPower;
 
 	OnPowerChanged.Broadcast(nullptr, this, Power, DeltaPower);
 
