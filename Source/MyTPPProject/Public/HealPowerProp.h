@@ -4,10 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "WuKongInterface_Prop.h"
 #include "HealPowerProp.generated.h"
 
+class USceneComponent;
+
 UCLASS()
-class MYTPPPROJECT_API AHealPowerProp : public AActor
+class MYTPPPROJECT_API AHealPowerProp : public AActor, public IWuKongInterface_Prop
 {
 	GENERATED_BODY()
 	
@@ -20,9 +23,14 @@ public:
 
 	virtual void PropInteract_Implementation(APawn* InstigatorPawn);
 
+	virtual FText GetInteractText_Implementation(APawn* InstigatorPawn);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	FTimerHandle DestroyTimerHandle;
+	void DestroySelf();
 
 public:	
 	// Called every frame
@@ -32,4 +40,5 @@ public:
 	UStaticMeshComponent* BaseMesh;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = HealPowerActor)
 	UStaticMeshComponent* LidMesh;
+
 };
