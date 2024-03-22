@@ -36,7 +36,7 @@ ABaseProjectile::ABaseProjectile()
 	MoveComp->bRotationFollowsVelocity = true;
 	MoveComp->bInitialVelocityInLocalSpace = true;
 	MoveComp->ProjectileGravityScale = 1.0f;
-	MoveComp->InitialSpeed = 8000;
+	MoveComp->InitialSpeed = 5000;
 	MoveComp->bShouldBounce = true;
 	MoveComp->Bounciness = 0.8f;
 
@@ -78,7 +78,7 @@ void ABaseProjectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* Othe
 			UHealthComponent* HealthComp = Cast<UHealthComponent>(OtherActor->GetComponentByClass(UHealthComponent::StaticClass()));
 			if (HealthComp)
 			{
-				HealthComp->ApplyHealthChange(-30.0f);
+				HealthComp->ApplyHealthChange(30.0f);
 				UE_LOG(LogTemp, Warning, TEXT("Take Damage by BaseProjectile!!!"));
 				GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("Take Damage by BaseProjectile!!!"));
 			}

@@ -34,10 +34,10 @@ void UPropInteractComponent::PrimaryInteract()
 	FCollisionShape Shape;
 	Shape.SetSphere(CollisionRadius);
 
-	//·µ»ØÅö×²²¼¶ûÀàĞÍÅö×²¼ì²â½á¹û
+	//è¿”å›ç¢°æ’å¸ƒå°”ç±»å‹ç¢°æ’æ£€æµ‹ç»“æœ
 	bool bBlockingHit = GetWorld()->SweepMultiByObjectType(Hits, EyeLocation, TraceEnd, FQuat::Identity, ObjectiveQueryParam, Shape);
 
-	//¸ù¾İÅö×²¼ì²â½á¹ûÈ·¶¨¼ì²âÉäÏßµÄÑÕÉ«£¬ÕæÎªÂÌ£¬¼ÙÎªºì
+	//æ ¹æ®ç¢°æ’æ£€æµ‹ç»“æœç¡®å®šæ£€æµ‹å°„çº¿çš„é¢œè‰²ï¼ŒçœŸä¸ºç»¿ï¼Œå‡ä¸ºçº¢
 	FColor LineColor = bBlockingHit ? FColor::Green : FColor::Red;
 
 
