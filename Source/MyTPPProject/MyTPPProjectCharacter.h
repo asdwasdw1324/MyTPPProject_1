@@ -83,6 +83,9 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category = Attack)
 	void SetIsNormalAttack();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<UAnimMontage>DeathAnim;
 			
 
 protected:
@@ -105,6 +108,8 @@ public:
 	UFUNCTION()
 	void OnPowerChangeFunc(AActor* InstigatorActor, UPowerComponent* OwningComp, float NewPower, float Delta);
 
+	void WuKongOnDeath();
+	
 	virtual void PostInitializeComponents() override;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Attribute)

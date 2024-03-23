@@ -84,6 +84,8 @@ void AMyTPPProjectCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+
+	TPPHealthComponent->OnDeath.AddUObject(this,&AMyTPPProjectCharacter::WuKongOnDeath);
 }
 
 void AMyTPPProjectCharacter::SetIsNormalAttack()
@@ -113,6 +115,18 @@ void AMyTPPProjectCharacter::OnPowerChangeFunc(AActor* InstigatorActor, UPowerCo
 		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, FString::Printf(TEXT("DeltaPower: %f"), Delta));
 		UE_LOG(TPPCharacterLog, Warning, TEXT("DeltaPower: %f"), Delta);
 	}
+}
+
+void AMyTPPProjectCharacter::WuKongOnDeath()
+{
+	UE_LOG(TPPCharacterLog, Error, TEXT("Player %s is dead!"), *GetNameSafe(this));
+	PlayAnimMontage(DeathAnim);
+
+	GetCharacterMovement()->DisableMovement();
+
+	SetLifeSpan(5.0f);
+
+	Controller->ChangeState(NAME_Spectating);
 }
 
 void AMyTPPProjectCharacter::PostInitializeComponents()

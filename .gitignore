@@ -83,3 +83,6 @@ Content/ThirdPerson/Blueprints/BP_ThirdPersonCharacter.uasset
 *.umap
 *.uasset
 *.xml
+*.uasset
+*.uasset
+*.ini

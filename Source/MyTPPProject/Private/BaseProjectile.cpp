@@ -35,8 +35,8 @@ ABaseProjectile::ABaseProjectile()
 	MoveComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMoveComp"));
 	MoveComp->bRotationFollowsVelocity = true;
 	MoveComp->bInitialVelocityInLocalSpace = true;
-	MoveComp->ProjectileGravityScale = 1.0f;
-	MoveComp->InitialSpeed = 5000;
+	MoveComp->ProjectileGravityScale = 1.5f;
+	MoveComp->InitialSpeed = 4000;
 	MoveComp->bShouldBounce = true;
 	MoveComp->Bounciness = 0.8f;
 
@@ -74,22 +74,34 @@ void ABaseProjectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* Othe
 		if (OtherActor != this && OtherComp->IsSimulatingPhysics())
 		{
 			OtherComp->AddImpulseAtLocation(MoveComp->Velocity * 100.0f, Hit.ImpactPoint);
-
-			UHealthComponent* HealthComp = Cast<UHealthComponent>(OtherActor->GetComponentByClass(UHealthComponent::StaticClass()));
-			if (HealthComp)
-			{
-				HealthComp->ApplyHealthChange(30.0f);
-				UE_LOG(LogTemp, Warning, TEXT("Take Damage by BaseProjectile!!!"));
-				GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("Take Damage by BaseProjectile!!!"));
-			}
 		}
 		if (OtherActor != GetInstigator())
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Instigator is not same with attacked one!"));
+			UE_LOG(LogTemp, Warning, TEXT("Instigator is not same with attacked one!"));
 		}
 	}
 }
 
+//BeginOverlap function when ProjectileBase hit on any other actors
+void ABaseProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent*
+	OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	Explode();
+
+	if (OtherActor && OtherActor != this)
+	{
+		UHealthComponent* HealthComp = Cast<UHealthComponent>(OtherActor->GetComponentByClass(UHealthComponent::StaticClass()));
+		if (HealthComp)
+		{
+			HealthComp->ApplyHealthChange(30.0f);
+			UE_LOG(LogTemp, Warning, TEXT("Take Damage by BaseProjectile!!!"));
+			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("Take Damage by BaseProjectile!!!"));
+		}
+	}
+}
+
+//Explode implementation in C++
 void ABaseProjectile::Explode_Implementation()
 {
 	// Check to make sure we aren't already being 'destroyed'
@@ -116,5 +128,6 @@ void ABaseProjectile::PostInitializeComponents()
 	// PostInitializeComponent is the preferred way of binding any events.
 	// Bind OnActorHit event on the OnComponentHit delegate
 	SphereComp->OnComponentHit.AddDynamic(this, &ABaseProjectile::OnActorHit);
+	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &ABaseProjectile::OnActorOverlap);
 }
 
