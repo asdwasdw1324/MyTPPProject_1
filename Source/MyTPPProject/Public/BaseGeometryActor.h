@@ -93,6 +93,8 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnColorChanged OnColorChanged;
 
+	virtual void PostInitializeComponents() override;
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -121,5 +123,10 @@ public:
 	void OnTimeFire();
 	
 	TEnumAsByte<EMyEnumeration::Type>MyEnum;
+
+	UFUNCTION()
+	void ColorChangeFunc(const FLinearColor& Color, const FString& Name);
+
+	void TimerFinishedFunc(AActor* FinishedGeoActor);
 	
 };

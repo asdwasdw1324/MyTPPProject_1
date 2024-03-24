@@ -27,7 +27,7 @@ void AFireDamageArea::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	DrawDebugSphere(GetWorld(), GetActorLocation(), FireRadius, 24, AreaFrameColor);
-	UGameplayStatics::ApplyRadialDamage(GetWorld(), DamageValuePS, GetActorLocation(), FireRadius, DamageType, RadialIgnoreActors, this, nullptr, false, ECollisionChannel::ECC_Visibility);
+	DrawDebugSphere(GetWorld(), GetActorLocation(), FDAParam.FireRadius, 48, FDAParam.AreaFrameColor);
+	UGameplayStatics::ApplyRadialDamage(GetWorld(), FDAParam.DamageValuePS, GetActorLocation(), FDAParam.FireRadius, FDAParam.DamageType, FDAParam.RadialIgnoreActors, this, nullptr, false, ECollisionChannel::ECC_Visibility);
 }
 

@@ -79,10 +79,5 @@ DerivedDataCache/*
 Content/ThirdPerson/Blueprints/BP_ThirdPersonCharacter.uasset
 *.uasset
 *.umap
-*.uasset
-*.umap
-*.uasset
 *.xml
-*.uasset
-*.uasset
 *.ini

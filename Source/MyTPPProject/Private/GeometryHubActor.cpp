@@ -36,7 +36,7 @@ void AGeometryHubActor::SpawnActorMethod1()
 	for (int32 i = 0; i < 5; ++i)
 	{
 		//Spawn Location FTransform
-		FTransform GemometryTransform = FTransform(FRotator::ZeroRotator, FVector(0.0f, 300.0f * i, 300.0f));
+		FTransform GemometryTransform = FTransform(FRotator::ZeroRotator, FVector(0.0f, 300.0f * i, 500.0f));
 
 		//Return Pointer that spawned by SpawnActor function
 		ABaseGeometryActor* Geometry = GetWorld()->SpawnActorDeferred<ABaseGeometryActor>(GeometryClass, GemometryTransform);
@@ -65,7 +65,7 @@ void AGeometryHubActor::SpawnActorMethod2()
 
 		if (Geometry)
 		{
-			Geometry->SetGeometryData(Payload.Data);
+			Geometry->SetGeometryData(Payload.GeoData);
 			Geometry->FinishSpawning(Payload.InitialTransform);
 		}
 	}

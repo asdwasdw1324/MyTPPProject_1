@@ -8,17 +8,10 @@
 
 class USceneComponent;
 
-UCLASS()
-class MYTPPPROJECT_API AFireDamageArea : public AActor
+USTRUCT(BlueprintType)
+struct FFireDamageAreaParam
 {
-	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
-	AFireDamageArea();
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	TObjectPtr<USceneComponent> FireDamageArea;
+	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float FireRadius = 300.0f;
@@ -30,11 +23,27 @@ public:
 	TSubclassOf<UDamageType> DamageType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float DamageValuePS = 3.0f;
+	int32 DamageValuePS = 2.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TArray<AActor*> RadialIgnoreActors;
+};
 
+UCLASS()
+class MYTPPPROJECT_API AFireDamageArea : public AActor
+{
+	GENERATED_BODY()
+	
+public:	
+	// Sets default values for this actor's properties
+	AFireDamageArea();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TObjectPtr<USceneComponent> FireDamageArea;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ParameterSruct)
+	FFireDamageAreaParam FDAParam;
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

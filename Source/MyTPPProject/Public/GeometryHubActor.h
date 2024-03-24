@@ -13,13 +13,13 @@ struct FGeometryPayload
 	GENERATED_USTRUCT_BODY()
 
 public:
-	UPROPERTY()
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	TSubclassOf<ABaseGeometryActor> GeometryClass;
 
-	UPROPERTY()
-	FGeometryData Data;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGeometryData GeoData;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FTransform InitialTransform;
 };
 
