@@ -9,7 +9,7 @@ UPropInteractComponent::UPropInteractComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 
 	// ...
 }
@@ -51,6 +51,7 @@ void UPropInteractComponent::PrimaryInteract()
 				APawn* MyPawn = Cast<APawn>(MyOwner);
 				IWuKongInterface_Prop::Execute_PropInteract(HitActor, MyPawn);
 				IWuKongInterface_Prop::Execute_GetInteractText(HitActor, MyPawn);
+				IWuKongInterface_Prop::Execute_HealInteract(HitActor, MyPawn);
 				break;
 			}
 		}

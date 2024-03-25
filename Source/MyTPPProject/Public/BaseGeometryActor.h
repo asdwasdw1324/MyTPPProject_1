@@ -3,7 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "WuKongInterface_Prop.h"
 #include "GameFramework/Actor.h"
+#include "WuKongInterface_Prop.h"
 #include "BaseGeometryActor.generated.h"
 
 class UStaticMeshComponent;
@@ -65,7 +67,7 @@ struct FGeometryData
 };
 
 UCLASS()
-class MYTPPPROJECT_API ABaseGeometryActor : public AActor
+class MYTPPPROJECT_API ABaseGeometryActor : public AActor, public IWuKongInterface_Prop
 {
 	GENERATED_BODY()
 	
@@ -128,5 +130,7 @@ public:
 	void ColorChangeFunc(const FLinearColor& Color, const FString& Name);
 
 	void TimerFinishedFunc(AActor* FinishedGeoActor);
+
+	virtual void HealInteract_Implementation(APawn* InstigatorPawn);
 	
 };

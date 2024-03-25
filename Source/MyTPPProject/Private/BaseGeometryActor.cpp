@@ -2,11 +2,14 @@
 
 
 #include "BaseGeometryActor.h"
+
+#include "HealthComponent.h"
 #include "UObject\ConstructorHelpers.h"
 #include "TimerManager.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Components\StaticMeshComponent.h"
 #include "Engine\StaticMesh.h"
+#include "MyTPPProject\MyTPPProjectCharacter.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogBaseGeometry, All, All)
 
@@ -112,6 +115,7 @@ void ABaseGeometryActor::PostInitializeComponents()
 	OnTimerFinished.AddUObject(this, &ABaseGeometryActor::TimerFinishedFunc);
 }
 
+//Delegate Test
 void ABaseGeometryActor::ColorChangeFunc(const FLinearColor& Color, const FString& Name)
 {
 	UE_LOG(LogBaseGeometry, Warning, TEXT("Color set up to: %s"), *Color.ToString());
@@ -122,4 +126,17 @@ void ABaseGeometryActor::TimerFinishedFunc(AActor* FinishedGeoActor)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, (TEXT("%s: Stop to change color!"), *GetNameSafe(FinishedGeoActor)));
 	UE_LOG(LogBaseGeometry, Error, TEXT("%s: Stop to change color!"), *GetNameSafe(FinishedGeoActor));
+}
+//Delegate Test
+
+void ABaseGeometryActor::HealInteract_Implementation(APawn* InstigatorPawn)
+{
+	AMyTPPProjectCharacter* WuKong = CastChecked<AMyTPPProjectCharacter>(InstigatorPawn);
+	if (WuKong)
+	{
+		int currenthealth = WuKong->TPPHealthComponent->GetHealth();
+		WuKong->TPPHealthComponent->SetHealth(currenthealth + 30.0f);
+	}
+
+	Destroy();
 }

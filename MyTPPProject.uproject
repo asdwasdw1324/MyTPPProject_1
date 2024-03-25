@@ -28,6 +28,14 @@
 		{
 			"Name": "LiveLinkControlRig",
 			"Enabled": true
+		},
+		{
+			"Name": "VirtualCamera",
+			"Enabled": true
+		},
+		{
+			"Name": "RemoteSession",
+			"Enabled": true
 		}
 	]
 }

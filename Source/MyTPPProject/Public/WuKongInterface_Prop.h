@@ -28,4 +28,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	FText GetInteractText(APawn* InstigatorPawn);
 
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void HealInteract(APawn* InstigatorPawn);
+
 };
