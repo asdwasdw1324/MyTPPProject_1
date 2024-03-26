@@ -11,7 +11,7 @@ ADashProjectile::ADashProjectile()
 	TeleportDelay = 0.2f;
 	DetonateDelay = 0.2f;
 
-	MoveComp->InitialSpeed = 6000.0f;
+	MoveComp->InitialSpeed = 5000.0f;
 }
 
 void ADashProjectile::BeginPlay()

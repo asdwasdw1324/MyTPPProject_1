@@ -16,6 +16,7 @@ class UHealthComponent;
 class UAnimMontage;
 class UPowerComponent;
 class UPropInteractComponent;
+class ADashProjectile;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -51,8 +52,8 @@ class AMyTPPProjectCharacter : public ACharacter
 	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* NormalAttackAction;
 
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	//UInputAction* ChargedAttackAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* TeleportProjectile;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* Interact_Prop;
@@ -78,6 +79,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attack)
 	TObjectPtr<UAnimMontage> NorAttackMontage;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Teleport)
+	TObjectPtr<UAnimMontage> TeleportMontage;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Attack)
 	bool IsNormalAttack = false;
 
@@ -86,7 +90,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<UAnimMontage>DeathAnim;
-			
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<ADashProjectile>DashProj;
+
 
 protected:
 	// APawn interface
@@ -123,5 +130,12 @@ public:
 
 	UFUNCTION()
 	void PrimaryInteract();
+
+	UFUNCTION(BlueprintCallable)
+	void WuKongTeleport();
+
+	UFUNCTION()
+	void PowerHeal();
+	
 };
 

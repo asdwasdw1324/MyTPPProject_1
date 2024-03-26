@@ -15,6 +15,7 @@
 #include "Animation\AnimInstance.h"
 #include "PowerComponent.h"
 #include "PropInteractComponent.h"
+#include "DashProjectile.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 DEFINE_LOG_CATEGORY_STATIC(TPPCharacterLog, All, All);
@@ -144,6 +145,54 @@ void AMyTPPProjectCharacter::PrimaryInteract()
 	}
 }
 
+void AMyTPPProjectCharacter::WuKongTeleport()
+{
+	if (DashProj)
+	{
+		FRotator MuzzleRotation;
+		FVector MuzzleLocation;
+		GetActorEyesViewPoint(MuzzleLocation, MuzzleRotation);
+		MuzzleRotation = GetControlRotation();
+		MuzzleLocation = MuzzleLocation + MuzzleRotation.Vector() * 100;
+		FTransform SpawnTM = FTransform(MuzzleRotation, MuzzleLocation);
+
+		UWorld* World = GetWorld();
+		if (!World)
+		{
+			return;
+		}
+		float currentpower = TPPPowerComponent->GetPower();
+		if (currentpower >= 50.0f)
+		{
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = this;
+			SpawnParams.Instigator = this;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+			PlayAnimMontage(TeleportMontage);
+
+			ADashProjectile* DashProjectile = nullptr;
+			DashProjectile = World->SpawnActor<ADashProjectile>(DashProj, SpawnTM, SpawnParams);
+			
+			TPPPowerComponent->SetPower(currentpower - 50.0f);
+			GetWorldTimerManager().SetTimer(TPPPowerComponent->PowerHealTimerHandle, this, &AMyTPPProjectCharacter::PowerHeal, 2.0f, true);
+			
+			MuzzleRotation.Pitch = 0;
+			MuzzleRotation.Roll = 0;
+			SetActorRotation(MuzzleRotation);
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("Power not Enough!")));
+		}
+	}
+}
+
+void AMyTPPProjectCharacter::PowerHeal()
+{
+	TPPPowerComponent->PowerHealUpdate();
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Input
 
@@ -169,6 +218,9 @@ void AMyTPPProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 
 		//Interact
 		EnhancedInputComponent->BindAction(Interact_Prop, ETriggerEvent::Started, this, &AMyTPPProjectCharacter::PrimaryInteract);
+
+		//Teleport
+		EnhancedInputComponent->BindAction(TeleportProjectile,ETriggerEvent::Started, this, &AMyTPPProjectCharacter::WuKongTeleport);
 	} 
 	else
 	{
