@@ -24,6 +24,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Teleport")
 	float DetonateDelay;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Teleport")
+	USoundBase* EmitterSound;
+
 	// Handle to cancel timer if we already hit something
 	FTimerHandle TimerHandle_DelayedDetonate;
 
@@ -33,6 +36,5 @@ public:
 	void TeleportInstigator();
 
 	virtual void BeginPlay() override;
-
-	USoundBase* EmitterSound;
+	
 };

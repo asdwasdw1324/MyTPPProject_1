@@ -30,7 +30,7 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = false;
+	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
 
 	// Configure character movement
@@ -77,8 +77,8 @@ void AMyTPPProjectCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
-	//Add Input Mapping Context
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	//Add Input Mapping Context (Enhanced input context system)
+	if (const APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
@@ -86,14 +86,17 @@ void AMyTPPProjectCharacter::BeginPlay()
 		}
 	}
 
+	//Bind death function after broadcasting OnDeath delegate
 	TPPHealthComponent->OnDeath.AddUObject(this,&AMyTPPProjectCharacter::WuKongOnDeath);
 }
 
+//After finishing normal attack, execute this function to reset normal attack boolean value, then we can normal attack again
 void AMyTPPProjectCharacter::SetIsNormalAttack()
 {
 	IsNormalAttack = false;
 }
 
+//log when health changed
 void AMyTPPProjectCharacter::OnHealthChangeFunc(AActor* InstigatorActor, UHealthComponent* OwningComp, float NewHealth, float Delta)
 {
 	if (GEngine)
@@ -102,10 +105,11 @@ void AMyTPPProjectCharacter::OnHealthChangeFunc(AActor* InstigatorActor, UHealth
 		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString::Printf(TEXT("%s"), *GetNameSafe(OwningComp)));
 		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, FString::Printf(TEXT("Health: %f"), NewHealth)); 
 		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, FString::Printf(TEXT("DeltaHealth: %f"), Delta));
-		UE_LOG(TPPCharacterLog, Warning, TEXT("Health: %f"), NewHealth);
+		UE_LOG(TPPCharacterLog, Warning, TEXT("Health: %f"), Delta);
 	}
 }
 
+//log when power changed
 void AMyTPPProjectCharacter::OnPowerChangeFunc(AActor* InstigatorActor, UPowerComponent* OwningComp, float NewPower, float Delta)
 {
 	if (GEngine)
@@ -118,6 +122,7 @@ void AMyTPPProjectCharacter::OnPowerChangeFunc(AActor* InstigatorActor, UPowerCo
 	}
 }
 
+//Death function
 void AMyTPPProjectCharacter::WuKongOnDeath()
 {
 	UE_LOG(TPPCharacterLog, Error, TEXT("Player %s is dead!"), *GetNameSafe(this));
@@ -145,6 +150,7 @@ void AMyTPPProjectCharacter::PrimaryInteract()
 	}
 }
 
+//Spawn teleport projectile
 void AMyTPPProjectCharacter::WuKongTeleport()
 {
 	if (DashProj)
@@ -153,15 +159,15 @@ void AMyTPPProjectCharacter::WuKongTeleport()
 		FVector MuzzleLocation;
 		GetActorEyesViewPoint(MuzzleLocation, MuzzleRotation);
 		MuzzleRotation = GetControlRotation();
-		MuzzleLocation = MuzzleLocation + MuzzleRotation.Vector() * 100;
-		FTransform SpawnTM = FTransform(MuzzleRotation, MuzzleLocation);
+		MuzzleLocation = MuzzleLocation + MuzzleRotation.Vector() * 300;
+		FTransform const SpawnTM = FTransform(MuzzleRotation, MuzzleLocation);
 
 		UWorld* World = GetWorld();
 		if (!World)
 		{
 			return;
 		}
-		float currentpower = TPPPowerComponent->GetPower();
+		int currentpower = TPPPowerComponent->GetPower();
 		if (currentpower >= 50.0f)
 		{
 			FActorSpawnParameters SpawnParams;
@@ -171,8 +177,8 @@ void AMyTPPProjectCharacter::WuKongTeleport()
 
 			PlayAnimMontage(TeleportMontage);
 
-			ADashProjectile* DashProjectile = nullptr;
-			DashProjectile = World->SpawnActor<ADashProjectile>(DashProj, SpawnTM, SpawnParams);
+			//ADashProjectile* DashProjectile = nullptr;
+			ADashProjectile* DashProjectile = World->SpawnActor<ADashProjectile>(DashProj, SpawnTM, SpawnParams);
 			
 			TPPPowerComponent->SetPower(currentpower - 50.0f);
 			GetWorldTimerManager().SetTimer(TPPPowerComponent->PowerHealTimerHandle, this, &AMyTPPProjectCharacter::PowerHeal, 2.0f, true);
@@ -188,10 +194,14 @@ void AMyTPPProjectCharacter::WuKongTeleport()
 	}
 }
 
-void AMyTPPProjectCharacter::PowerHeal()
+//Heal power after spawning teleport projectile
+void AMyTPPProjectCharacter::PowerHeal() const
 {
 	TPPPowerComponent->PowerHealUpdate();
 }
+
+
+//////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
 // Input
@@ -228,10 +238,11 @@ void AMyTPPProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 	}
 }
 
+//Base operate for moving
 void AMyTPPProjectCharacter::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
-	FVector2D MovementVector = Value.Get<FVector2D>();
+	const FVector2D MovementVector = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)
 	{
@@ -254,10 +265,11 @@ void AMyTPPProjectCharacter::Move(const FInputActionValue& Value)
 	}
 }
 
+//Base operate for looking
 void AMyTPPProjectCharacter::Look(const FInputActionValue& Value)
 {
 	// input is a Vector2D
-	FVector2D LookAxisVector = Value.Get<FVector2D>();
+	const FVector2D LookAxisVector = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)
 	{

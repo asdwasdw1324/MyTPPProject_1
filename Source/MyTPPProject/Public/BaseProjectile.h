@@ -68,6 +68,7 @@ protected:
 	// Not required for assignment, useful for expanding in Blueprint later on
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void Explode();
+	
 	virtual void Explode_Implementation();
 
 	virtual void PostInitializeComponents() override;

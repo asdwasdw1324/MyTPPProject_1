@@ -2,7 +2,6 @@
 
 
 #include "BaseGeometryActor.h"
-
 #include "HealthComponent.h"
 #include "UObject\ConstructorHelpers.h"
 #include "TimerManager.h"
@@ -45,7 +44,6 @@ void ABaseGeometryActor::BeginPlay()
 	Super::BeginPlay();
 
 	GeoInitialLocation = GetActorLocation();
-	
 	SetColor(GeometryData.GeoColor);
 	GetWorldTimerManager().SetTimer(ColorChangeTimerHandle, this, &ABaseGeometryActor::OnTimeFire, GeometryData.ChangeColorTimeRate, true, -1);
 }
@@ -129,13 +127,15 @@ void ABaseGeometryActor::TimerFinishedFunc(AActor* FinishedGeoActor)
 }
 //Delegate Test
 
+
 void ABaseGeometryActor::HealInteract_Implementation(APawn* InstigatorPawn)
 {
 	AMyTPPProjectCharacter* WuKong = CastChecked<AMyTPPProjectCharacter>(InstigatorPawn);
 	if (WuKong)
 	{
-		int currenthealth = WuKong->TPPHealthComponent->GetHealth();
-		WuKong->TPPHealthComponent->SetHealth(currenthealth + 30.0f);
+		float currenthealth = WuKong->TPPHealthComponent->GetHealth();
+		int CurrentHealth = (int)currenthealth;
+		WuKong->TPPHealthComponent->SetHealth(CurrentHealth + 30);
 	}
 
 	Destroy();

@@ -29,7 +29,7 @@ enum class EGeometryType : uint8
 	GeoOption3 UMETA(DisplayName = "Opt3")
 };
 
-UENUM()
+UENUM(BlueprintType)
 namespace EMyEnumeration
 {
 	enum Type
@@ -75,9 +75,11 @@ public:
 	// Sets default values for this actor's properties
 	ABaseGeometryActor();
 
+	//Define a GeometryData struct
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|GeoData")
 	FGeometryData GeometryData;
 
+	//Get and Set GeometryData
 	UFUNCTION(BlueprintCallable)
 	void SetGeometryData(const FGeometryData& Data)
 	{
@@ -89,11 +91,14 @@ public:
 	{
 		return GeometryData;
 	}
+	//Get and Set GeometryData
+
 
 	FOnTimerFinished OnTimerFinished;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnColorChanged OnColorChanged;
+
 
 	virtual void PostInitializeComponents() override;
 	
