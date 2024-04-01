@@ -47,10 +47,10 @@ struct FGeometryData
 	GENERATED_USTRUCT_BODY()
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	float GeoAmplitude = 100.0f;
+	float GeoAmplitude = 50.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	float GeoFrequency = 10.0f;
+	float GeoFrequency = 2.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	EMovementType GeoMoveType = EMovementType::Static;
@@ -93,49 +93,55 @@ public:
 	}
 	//Get and Set GeometryData
 
-
+	//Delegate instance for ending to change color
 	FOnTimerFinished OnTimerFinished;
 
+	//Delegate instance for changing color
 	UPROPERTY(BlueprintAssignable)
 	FOnColorChanged OnColorChanged;
 
+	UPROPERTY(VisibleAnywhere, Category = "Mesh")
+	UStaticMeshComponent* BaseMesh;
 
-	virtual void PostInitializeComponents() override;
+	UFUNCTION(BlueprintCallable)
+	void MoveLogic();
+
+	UFUNCTION(BlueprintCallable)
+	void SetColor(const FLinearColor& Color);
 	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	virtual void PostInitializeComponents() override;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(VisibleAnywhere, Category = "Mesh")
-	UStaticMeshComponent* BaseMesh;
-
+	//Store this actor's initial location when game starts
 	FVector GeoInitialLocation;
 
+	//TimerHandle for changing color
 	FTimerHandle ColorChangeTimerHandle;
 
 	//ColorChange parameters
 	const int32 MaxTimerCount = 10;
 	int32 TimerCount = 0;
 
-	UFUNCTION(BlueprintCallable)
-	void MoveLogic();
-
-	UFUNCTION()
-	void SetColor(const FLinearColor& Color);
-
+	//Fire to change color function
 	void OnTimeFire();
-	
-	TEnumAsByte<EMyEnumeration::Type>MyEnum;
 
+	////Delegate Test function
 	UFUNCTION()
 	void ColorChangeFunc(const FLinearColor& Color, const FString& Name);
 
 	void TimerFinishedFunc(AActor* FinishedGeoActor);
-
+	//Delegate Test function
+	
+	//Implementation function to heal character
 	virtual void HealInteract_Implementation(APawn* InstigatorPawn);
+
+	TEnumAsByte<EMyEnumeration::Type>MyEnum;
 	
 };

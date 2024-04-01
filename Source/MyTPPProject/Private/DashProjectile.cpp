@@ -46,8 +46,12 @@ void ADashProjectile::TeleportInstigator()
 	AActor* ActorToTeleport = GetInstigator();
 	if (ensure(ActorToTeleport))
 	{
+		//Avoid the teleport location is in the air
+		FVector actorlocation = GetActorLocation();
+		FVector TeleportLocation = FVector(actorlocation.X, actorlocation.Y, 0);
+		
 		// Keep instigator rotation or it may end up jarring
-		ActorToTeleport->TeleportTo(GetActorLocation(), ActorToTeleport->GetActorRotation(), false, false);
+		ActorToTeleport->TeleportTo(TeleportLocation, ActorToTeleport->GetActorRotation(), false, false);
 
 		// Play shake on the player we teleported
 		APawn* InstigatorPawn = Cast<APawn>(ActorToTeleport);

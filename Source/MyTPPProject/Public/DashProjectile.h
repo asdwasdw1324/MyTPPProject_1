@@ -18,7 +18,7 @@ public:
 
 	ADashProjectile();
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Param")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Teleport")
 	float TeleportDelay;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Teleport")
