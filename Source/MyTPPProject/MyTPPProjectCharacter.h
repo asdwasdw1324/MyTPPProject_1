@@ -64,7 +64,16 @@ class AMyTPPProjectCharacter : public ACharacter
 
 public:
 	AMyTPPProjectCharacter();
-	
+
+	//Character Component
+	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Attribute)
+	TObjectPtr<UPowerComponent> TPPPowerComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Attribute)
+	TObjectPtr<UHealthComponent> TPPHealthComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Interact)
+	TObjectPtr<UPropInteractComponent> WuKongInteractComponent;
 
 protected:
 
@@ -106,20 +115,18 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<ADashProjectile>DashProj;
-
-
-protected:
+	
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
 	// To add mapping context
-	virtual void BeginPlay();
+	virtual void BeginPlay() override;
 
 
 public:
-	/** Returns CameraBoom subobject **/
+	/** Returns CameraBoom subObject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-	/** Returns FollowCamera subobject **/
+	/** Returns FollowCamera subObject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	UFUNCTION()
@@ -134,15 +141,6 @@ public:
 	void PowerHeal() const;
 	
 	virtual void PostInitializeComponents() override;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Attribute)
-	TObjectPtr<UPowerComponent> TPPPowerComponent;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Attribute)
-	TObjectPtr<UHealthComponent> TPPHealthComponent;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Interact)
-	TObjectPtr<UPropInteractComponent> WuKongInteractComponent;
 	
 };
 
