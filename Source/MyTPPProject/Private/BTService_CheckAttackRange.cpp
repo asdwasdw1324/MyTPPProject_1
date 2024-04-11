@@ -8,7 +8,7 @@
 
 UBTService_CheckAttackRange::UBTService_CheckAttackRange()
 {
-	MaxAttackRange = 2000.0f;
+	MaxAttackRange = 1000.0f;
 
 	bNotifyBecomeRelevant = true;
 
@@ -22,28 +22,22 @@ void UBTService_CheckAttackRange::TickNode(UBehaviorTreeComponent& OwnerComp, ui
 	
 	//OwnerComp is the BehaviorTree instance which includes current BTService
 	//Get BlackBoard Asset associated with current BehaviorTree instance
-	UBlackboardComponent* BlackBoardComp = OwnerComp.GetBlackboardComponent();
-	if (ensure(BlackBoardComp))
+	if (UBlackboardComponent* BlackBoardComp = OwnerComp.GetBlackboardComponent())
 	{
-		AActor* TargetActor = Cast<AActor>(BlackBoardComp->GetValueAsObject("CharacterLocation"));
-		if (ensure(TargetActor))
+		if (const AActor* TargetActor = Cast<AActor>(BlackBoardComp->GetValueAsObject("EnemyActor")))
 		{
-			AAIController* MyAIController = OwnerComp.GetAIOwner();
-			if (ensure(MyAIController))
+			if (const AAIController* MyAIController = OwnerComp.GetAIOwner())
 			{
-				APawn* AIPawn = MyAIController->GetPawn();
-
-				if (ensure(AIPawn))
-				{	
-					float DistanceTo = FVector::Distance(TargetActor->GetActorLocation(), AIPawn->GetActorLocation());
-					bool bWithinRange = DistanceTo < MaxAttackRange;
+				if (const APawn* AIPawn = MyAIController->GetPawn())
+				{
+					const float DistanceTo = FVector::Distance(TargetActor->GetActorLocation(), AIPawn->GetActorLocation());
+					const bool bWithinRange = DistanceTo < MaxAttackRange;
 
 					bool bHasLOS = false;
 					if (bWithinRange)
 					{
 						bHasLOS = MyAIController->LineOfSightTo(TargetActor);
 					}
-
 					BlackBoardComp->SetValueAsBool(AttackRangeKey.SelectedKeyName, (bWithinRange && bHasLOS));
 				}
 			}
@@ -55,14 +49,12 @@ void UBTService_CheckAttackRange::OnBecomeRelevant(UBehaviorTreeComponent& Owner
 {
 	Super::OnBecomeRelevant(OwnerComp, NodeMemory);
 
-	APawn* MyPawn = UGameplayStatics::GetPlayerPawn(this, 0);
-	if (ensure(MyPawn))
+	if (APawn* MyPawn = UGameplayStatics::GetPlayerPawn(this, 0))
 	{
-		AAIController* MyAIController = Cast<AAIController>(OwnerComp.GetAIOwner());
-		if (MyAIController)
+		if (AAIController* MyAIController = Cast<AAIController>(OwnerComp.GetAIOwner()))
 		{
-			MyAIController->GetBlackboardComponent()->SetValueAsObject("CharacterLocation", MyPawn);
-			MyAIController->GetBlackboardComponent()->SetValueAsVector("MoveToLocation", MyPawn->GetActorLocation());
+			MyAIController->GetBlackboardComponent()->SetValueAsObject("EnemyActor", MyPawn);
+			MyAIController->GetBlackboardComponent()->SetValueAsVector("PatrolLocation", MyPawn->GetActorLocation());
 		}
 	}
 

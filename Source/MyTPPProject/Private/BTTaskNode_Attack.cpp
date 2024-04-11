@@ -11,15 +11,18 @@ EBTNodeResult::Type UBTTaskNode_Attack::ExecuteTask(UBehaviorTreeComponent& Owne
 {
 	if (AAIController* MyController = OwnerComp.GetAIOwner())
 	{
-		ACharacter* MyPawn = Cast<AMyTPPProjectCharacter>(MyController->GetPawn());
+		//Find Pawn belongs to AIController
+		ACharacter* MyPawn = Cast<ACharacter>(MyController->GetPawn());
 
 		if (MyPawn == nullptr)
 		{
 			return EBTNodeResult::Failed;
 		}
 
+		//Locate fire point
 		FVector MuzzleLocation = MyPawn->GetMesh()->GetSocketLocation("hand_r");
 
+		//Find target actor which be attacked(Player Pawn)
 		AActor* TargetActor = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject("EnemyActor"));
 		if (TargetActor == nullptr)
 		{
@@ -48,7 +51,7 @@ EBTNodeResult::Type UBTTaskNode_Attack::ExecuteTask(UBehaviorTreeComponent& Owne
 		ABaseProjectile* NewProj = nullptr;
 		if (ensure(ProjectileClass))
 		{
-			ACharacter* TargetCharacter = Cast<ACharacter>(OwnerComp.GetBlackboardComponent()->GetValueAsObject("CharacterLocation"));
+			ACharacter* TargetCharacter = Cast<ACharacter>(OwnerComp.GetBlackboardComponent()->GetValueAsObject("SelfActor"));
 			check(AttackAnimation);
 			TargetCharacter->PlayAnimMontage(AttackAnimation);
 

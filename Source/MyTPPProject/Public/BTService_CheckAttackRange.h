@@ -11,6 +11,7 @@
  */
 
 class UBlackboardComponent;
+class AAIController;
 
 UCLASS()
 class MYTPPPROJECT_API UBTService_CheckAttackRange : public UBTService
