@@ -21,6 +21,7 @@ enum class EMovementType : uint8
 	Static UMETA(DisplayName = "SaticState")
 };
 
+//Enumeration of Geometry type
 UENUM(BlueprintType)
 enum class EGeometryType : uint8
 {
@@ -29,10 +30,11 @@ enum class EGeometryType : uint8
 	GeoOption3 UMETA(DisplayName = "Opt3")
 };
 
+//Another declaration of enumeration
 UENUM(BlueprintType)
 namespace EMyEnumeration
 {
-	enum Type
+	enum EnumType
 	{
 		Type1,
 		Type2,
@@ -100,6 +102,7 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnColorChanged OnColorChanged;
 
+	//Declare a static mesh
 	UPROPERTY(VisibleAnywhere, Category = "Mesh")
 	UStaticMeshComponent* BaseMesh;
 
@@ -142,6 +145,7 @@ public:
 	//Implementation function to heal character
 	virtual void HealInteract_Implementation(APawn* InstigatorPawn);
 
-	TEnumAsByte<EMyEnumeration::Type>MyEnum;
+	TEnumAsByte<EMyEnumeration::EnumType>MyEnum;
+
 	
 };

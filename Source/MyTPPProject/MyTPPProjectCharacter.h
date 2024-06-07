@@ -66,12 +66,16 @@ public:
 	AMyTPPProjectCharacter();
 
 	//Character Component
+
+	//PowerComponent
 	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Attribute)
 	TObjectPtr<UPowerComponent> TPPPowerComponent;
 
+	//HealthComponent
 	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Attribute)
 	TObjectPtr<UHealthComponent> TPPHealthComponent;
 
+	//InteractComponent
 	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Interact)
 	TObjectPtr<UPropInteractComponent> WuKongInteractComponent;
 
