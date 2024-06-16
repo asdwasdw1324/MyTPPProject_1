@@ -29,8 +29,8 @@ void AHealPowerProp::PropInteract_Implementation(APawn* InstigatorPawn)
 	//UE_LOG(LogTemp, Warning, TEXT("TriggerInteract!"));
 
 	AMyTPPProjectCharacter* WuKong = CastChecked<AMyTPPProjectCharacter>(InstigatorPawn);
-	float currentpower = WuKong->TPPPowerComponent->GetPower();
-	WuKong->TPPPowerComponent->SetPower(currentpower + 25.0f);
+	float currentpower = WuKong->TppPowerComponent->GetPower();
+	WuKong->TppPowerComponent->SetPower(currentpower + 25.0f);
 	
 	GetWorld()->GetTimerManager().SetTimer(DestroyTimerHandle, this, &AHealPowerProp::DestroySelf, 2.0f, false);
 

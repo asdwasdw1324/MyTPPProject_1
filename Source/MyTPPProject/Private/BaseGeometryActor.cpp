@@ -133,9 +133,9 @@ void ABaseGeometryActor::HealInteract_Implementation(APawn* InstigatorPawn)
 	AMyTPPProjectCharacter* WuKong = CastChecked<AMyTPPProjectCharacter>(InstigatorPawn);
 	if (WuKong)
 	{
-		float currenthealth = WuKong->TPPHealthComponent->GetHealth();
+		float currenthealth = WuKong->TppHealthComponent->GetHealth();
 		int CurrentHealth = (int)currenthealth;
-		WuKong->TPPHealthComponent->SetHealth(CurrentHealth + 30);
+		WuKong->TppHealthComponent->SetHealth(CurrentHealth + 30);
 	}
 
 	Destroy();

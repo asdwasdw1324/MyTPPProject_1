@@ -11,8 +11,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "HealthComponent.h"
-#include "Animation\AnimMontage.h"
-#include "Animation\AnimInstance.h"
+#include "Animation/AnimMontage.h"
+#include "Animation/AnimInstance.h"
 #include "PowerComponent.h"
 #include "PropInteractComponent.h"
 #include "DashProjectile.h"
@@ -34,9 +34,10 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 	bUseControllerRotationRoll = false;
 
 	// Configure character movement
-	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
-
+	// Character moves in the direction of input...
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	// ...at this rotation rate
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
 	// instead of recompiling to adjust them
 	GetCharacterMovement()->JumpZVelocity = 700.f;
@@ -61,12 +62,12 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 
 	//Create Health component for the character, bind health initialization function when health changed
-	TPPHealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
-	TPPHealthComponent->OnHealthChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnHealthChangeFunc);
+	TppHealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
+	TppHealthComponent->OnHealthChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnHealthChangeFunc);
 
 	//Create Power component for the character, bind power initialization function when health changed
-	TPPPowerComponent = CreateDefaultSubobject<UPowerComponent>(TEXT("PowerComp"));
-	TPPPowerComponent->OnPowerChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnPowerChangeFunc);
+	TppPowerComponent = CreateDefaultSubobject<UPowerComponent>(TEXT("PowerComp"));
+	TppPowerComponent->OnPowerChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnPowerChangeFunc);
 
 	//Create interact component for the character
 	WuKongInteractComponent = CreateDefaultSubobject<UPropInteractComponent>(TEXT("InteractComp"));
@@ -87,7 +88,7 @@ void AMyTPPProjectCharacter::BeginPlay()
 	}
 
 	//Bind death function after broadcasting OnDeath delegate
-	TPPHealthComponent->OnDeath.AddUObject(this,&AMyTPPProjectCharacter::WuKongOnDeath);
+	TppHealthComponent->OnDeath.AddUObject(this,&AMyTPPProjectCharacter::WuKongOnDeath);
 }
 
 //After finishing normal attack, execute this function to reset normal attack boolean value, then we can normal attack again
@@ -167,7 +168,7 @@ void AMyTPPProjectCharacter::WuKongTeleport()
 		{
 			return;
 		}
-		int currentpower = TPPPowerComponent->GetPower();
+		int currentpower = TppPowerComponent->GetPower();
 		if (currentpower >= 50.0f)
 		{
 			FActorSpawnParameters SpawnParams;
@@ -180,8 +181,8 @@ void AMyTPPProjectCharacter::WuKongTeleport()
 			//ADashProjectile* DashProjectile = nullptr;
 			ADashProjectile* DashProjectile = World->SpawnActor<ADashProjectile>(DashProj, SpawnTM, SpawnParams);
 			
-			TPPPowerComponent->SetPower(currentpower - 50.0f);
-			GetWorldTimerManager().SetTimer(TPPPowerComponent->PowerHealTimerHandle, this, &AMyTPPProjectCharacter::PowerHeal, 2.0f, true);
+			TppPowerComponent->SetPower(currentpower - 50.0f);
+			GetWorldTimerManager().SetTimer(TppPowerComponent->PowerHealTimerHandle, this, &AMyTPPProjectCharacter::PowerHeal, 2.0f, true);
 			
 			MuzzleRotation.Pitch = 0;
 			MuzzleRotation.Roll = 0;
@@ -197,7 +198,7 @@ void AMyTPPProjectCharacter::WuKongTeleport()
 //Heal power after spawning teleport projectile
 void AMyTPPProjectCharacter::PowerHeal() const
 {
-	TPPPowerComponent->PowerHealUpdate();
+	TppPowerComponent->PowerHealUpdate();
 }
 
 

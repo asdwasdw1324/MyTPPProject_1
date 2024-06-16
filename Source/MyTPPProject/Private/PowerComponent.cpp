@@ -43,7 +43,7 @@ void UPowerComponent::PowerHealUpdate()
 	SetPower(Power + 2.0f);
 
 	AMyTPPProjectCharacter* PlayerWuKong = Cast<AMyTPPProjectCharacter>(GetOwner());
-	float PlayerWuKongHealth = PlayerWuKong->TPPHealthComponent->GetHealth();
+	float PlayerWuKongHealth = PlayerWuKong->TppHealthComponent->GetHealth();
 
 	if (UWorld* World = GetWorld())
 	{

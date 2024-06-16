@@ -37,7 +37,7 @@ class AMyTPPProjectCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext;
 
-	/** Jump Input Action */
+	/** Jumping Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* JumpAction;
 
@@ -64,16 +64,14 @@ class AMyTPPProjectCharacter : public ACharacter
 
 public:
 	AMyTPPProjectCharacter();
-
-	//Character Component
-
+	
 	//PowerComponent
 	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Attribute)
-	TObjectPtr<UPowerComponent> TPPPowerComponent;
+	TObjectPtr<UPowerComponent> TppPowerComponent;
 
 	//HealthComponent
 	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Attribute)
-	TObjectPtr<UHealthComponent> TPPHealthComponent;
+	TObjectPtr<UHealthComponent> TppHealthComponent;
 
 	//InteractComponent
 	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Interact)
@@ -139,6 +137,7 @@ public:
 	UFUNCTION()
 	void OnPowerChangeFunc(AActor* InstigatorActor, UPowerComponent* OwningComp, float NewPower, float Delta);
 
+	//static single broadcast
 	void WuKongOnDeath();
 
 	UFUNCTION()
