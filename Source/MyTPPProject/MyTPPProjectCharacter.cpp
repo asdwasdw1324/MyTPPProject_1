@@ -16,6 +16,7 @@
 #include "PowerComponent.h"
 #include "PropInteractComponent.h"
 #include "DashProjectile.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 DEFINE_LOG_CATEGORY_STATIC(TPPCharacterLog, All, All);
@@ -65,12 +66,14 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 	TppHealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
 	TppHealthComponent->OnHealthChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnHealthChangeFunc);
 
-	//Create Power component for the character, bind power initialization function when health changed
+	//Create Power component for the character, bind power initialization function when power changed
 	TppPowerComponent = CreateDefaultSubobject<UPowerComponent>(TEXT("PowerComp"));
 	TppPowerComponent->OnPowerChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnPowerChangeFunc);
 
 	//Create interact component for the character
 	WuKongInteractComponent = CreateDefaultSubobject<UPropInteractComponent>(TEXT("InteractComp"));
+
+	IsDeath = false;
 }
 
 void AMyTPPProjectCharacter::BeginPlay()
@@ -91,7 +94,7 @@ void AMyTPPProjectCharacter::BeginPlay()
 	TppHealthComponent->OnDeath.AddUObject(this,&AMyTPPProjectCharacter::WuKongOnDeath);
 }
 
-//After finishing normal attack, execute this function to reset normal attack boolean value, then we can normal attack again
+//After finishing normal attack, execute this function to reset normal attack boolean value, then we can do normal attack again
 void AMyTPPProjectCharacter::SetIsNormalAttack()
 {
 	IsNormalAttack = false;
@@ -104,9 +107,9 @@ void AMyTPPProjectCharacter::OnHealthChangeFunc(AActor* InstigatorActor, UHealth
 	{
 		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("%s"), *GetNameSafe(InstigatorActor)));
 		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString::Printf(TEXT("%s"), *GetNameSafe(OwningComp)));
-		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, FString::Printf(TEXT("Health: %f"), NewHealth)); 
-		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, FString::Printf(TEXT("DeltaHealth: %f"), Delta));
-		UE_LOG(TPPCharacterLog, Warning, TEXT("Health: %f"), Delta);
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, FString::Printf(TEXT("Health: %f"), NewHealth)); 
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, FString::Printf(TEXT("DeltaHealth: %f"), Delta));
+		//UE_LOG(TPPCharacterLog, Warning, TEXT("Health: %f"), Delta);
 	}
 }
 
@@ -117,9 +120,9 @@ void AMyTPPProjectCharacter::OnPowerChangeFunc(AActor* InstigatorActor, UPowerCo
 	{
 		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("%s"), *GetNameSafe(InstigatorActor)));
 		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString::Printf(TEXT("%s"), *GetNameSafe(OwningComp)));
-		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, FString::Printf(TEXT("Power: %f"), NewPower));
-		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, FString::Printf(TEXT("DeltaPower: %f"), Delta));
-		UE_LOG(TPPCharacterLog, Warning, TEXT("DeltaPower: %f"), Delta);
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, FString::Printf(TEXT("Power: %f"), NewPower));
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, FString::Printf(TEXT("DeltaPower: %f"), Delta));
+		//UE_LOG(TPPCharacterLog, Warning, TEXT("DeltaPower: %f"), Delta);
 	}
 }
 
@@ -127,13 +130,15 @@ void AMyTPPProjectCharacter::OnPowerChangeFunc(AActor* InstigatorActor, UPowerCo
 void AMyTPPProjectCharacter::WuKongOnDeath()
 {
 	UE_LOG(TPPCharacterLog, Error, TEXT("Player %s is dead!"), *GetNameSafe(this));
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Black, FString::Printf(TEXT("Player %s is dead!"), *GetNameSafe(this)));
+	
 	PlayAnimMontage(DeathAnim);
-
 	GetCharacterMovement()->DisableMovement();
+	SetLifeSpan(3.0f);
 
-	SetLifeSpan(5.0f);
-
-	Controller->ChangeState(NAME_Spectating);
+	//NAME_Spectating
+	Controller->ChangeState(EName::Spectating);
+	IsDeath = true;
 }
 
 void AMyTPPProjectCharacter::PostInitializeComponents()
@@ -156,6 +161,7 @@ void AMyTPPProjectCharacter::WuKongTeleport()
 {
 	if (DashProj)
 	{
+		//Confirm DashProj launch point
 		FRotator MuzzleRotation;
 		FVector MuzzleLocation;
 		GetActorEyesViewPoint(MuzzleLocation, MuzzleRotation);
@@ -163,13 +169,15 @@ void AMyTPPProjectCharacter::WuKongTeleport()
 		MuzzleLocation = MuzzleLocation + MuzzleRotation.Vector() * 300;
 		FTransform const SpawnTM = FTransform(MuzzleRotation, MuzzleLocation);
 
+		//Confirm world existed, or will not spawn actor
 		UWorld* World = GetWorld();
 		if (!World)
 		{
 			return;
 		}
-		int currentpower = TppPowerComponent->GetPower();
-		if (currentpower >= 50.0f)
+
+		int Currentpower = TppPowerComponent->GetPower();
+		if (Currentpower >= 50.0f)
 		{
 			FActorSpawnParameters SpawnParams;
 			SpawnParams.Owner = this;
@@ -181,8 +189,12 @@ void AMyTPPProjectCharacter::WuKongTeleport()
 			//ADashProjectile* DashProjectile = nullptr;
 			ADashProjectile* DashProjectile = World->SpawnActor<ADashProjectile>(DashProj, SpawnTM, SpawnParams);
 			
-			TppPowerComponent->SetPower(currentpower - 50.0f);
-			GetWorldTimerManager().SetTimer(TppPowerComponent->PowerHealTimerHandle, this, &AMyTPPProjectCharacter::PowerHeal, 2.0f, true);
+			TppPowerComponent->SetPower(Currentpower - 50.0f);
+			bool IsPowerHealTimerHandleActive = GetWorldTimerManager().IsTimerActive(TppPowerComponent->PowerHealTimerHandle);
+			if (!IsPowerHealTimerHandleActive)
+			{
+				GetWorldTimerManager().SetTimer(TppPowerComponent->PowerHealTimerHandle, this, &AMyTPPProjectCharacter::PowerHeal, 2.0f, true);
+			}
 			
 			MuzzleRotation.Pitch = 0;
 			MuzzleRotation.Roll = 0;
@@ -248,16 +260,18 @@ void AMyTPPProjectCharacter::Move(const FInputActionValue& Value)
 	if (Controller != nullptr)
 	{
 		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
+		FRotator Rotation = Controller->GetControlRotation();
+		FRotator YawRotation(0, Rotation.Yaw, 0);
 		//GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Cyan, FString::Printf(TEXT("The current controller YawRotation is: %s"), *YawRotation.ToString()));
 
 		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		//GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Orange, FString::Printf(TEXT("The current FRotationMatrix is: %s"), *FRotationMatrix(YawRotation).ToString()));
+		//GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Orange, FString::Printf(TEXT("The current ForwardDirection is: %s"), *ForwardDirection.ToString()));
 		//GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Cyan, FString::Printf(TEXT("The current ForwardDirection is: %s"), *ForwardDirection.ToString()));
 	
 		// get right vector 
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		//GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Cyan, FString::Printf(TEXT("The current RightDirection is: %s"), *RightDirection.ToString()));
 
 		// add movement 
@@ -270,7 +284,7 @@ void AMyTPPProjectCharacter::Move(const FInputActionValue& Value)
 void AMyTPPProjectCharacter::Look(const FInputActionValue& Value)
 {
 	// input is a Vector2D
-	const FVector2D LookAxisVector = Value.Get<FVector2D>();
+	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)
 	{

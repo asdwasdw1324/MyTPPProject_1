@@ -8,8 +8,8 @@
 
 ADashProjectile::ADashProjectile()
 {
-	TeleportDelay = 0.2f;
-	DetonateDelay = 0.2f;
+	TeleportDelay = 0.5f;
+	DetonateDelay = 0.5f;
 
 	MoveComp->InitialSpeed = 5000.0f;
 }
@@ -18,6 +18,7 @@ void ADashProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 
+	//Set explode timer after launch
 	GetWorldTimerManager().SetTimer(TimerHandle_DelayedDetonate, this, &ADashProjectile::Explode, DetonateDelay);
 	
 }
@@ -34,6 +35,7 @@ void ADashProjectile::Explode_Implementation()
 	MoveComp->StopMovementImmediately();
 	SetActorEnableCollision(false);
 
+	//Start teleport timer after explode
 	FTimerHandle TimerHandle_DelayedTeleport;
 	GetWorldTimerManager().SetTimer(TimerHandle_DelayedTeleport, this, &ADashProjectile::TeleportInstigator, TeleportDelay);
 

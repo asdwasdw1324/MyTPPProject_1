@@ -140,6 +140,9 @@ public:
 	//static single broadcast
 	void WuKongOnDeath();
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = PlayerState)
+	bool IsDeath;
+	
 	UFUNCTION()
 	void PowerHeal() const;
 	

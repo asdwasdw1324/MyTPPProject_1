@@ -39,7 +39,7 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite)
+	UPROPERTY(EditAnywhere, BlueprintReadwrite, Category = PowerHeal);
 	FTimerHandle PowerHealTimerHandle;
 	
 	UFUNCTION(BlueprintCallable)
