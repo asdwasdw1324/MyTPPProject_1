@@ -13,6 +13,16 @@ class UStaticMeshComponent;
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnTimerFinished, AActor*);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnColorChanged, const FLinearColor&, Color, const FString&, Name);
 
+UENUM()
+enum EMyEnumStatus : uint8
+{
+	Run,
+	Walk,
+	Idle,
+	Jump
+};
+
+
 //Enumeration of Movement Type
 UENUM(BlueprintType)
 enum class EMovementType : uint8
@@ -146,6 +156,8 @@ public:
 	virtual void HealInteract_Implementation(APawn* InstigatorPawn);
 
 	TEnumAsByte<EMyEnumeration::EnumType>MyEnum;
+
+	EMyEnumStatus EnumStat;
 
 	
 };

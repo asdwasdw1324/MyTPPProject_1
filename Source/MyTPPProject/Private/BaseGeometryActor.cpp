@@ -35,6 +35,8 @@ ABaseGeometryActor::ABaseGeometryActor()
  //    }
 	
 	MyEnum = EMyEnumeration::Type1;
+
+	EnumStat = EMyEnumStatus::Idle;
 	
 }
 
@@ -140,3 +142,4 @@ void ABaseGeometryActor::HealInteract_Implementation(APawn* InstigatorPawn)
 
 	Destroy();
 }
+
