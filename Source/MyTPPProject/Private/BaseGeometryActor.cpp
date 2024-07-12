@@ -30,13 +30,13 @@ ABaseGeometryActor::ABaseGeometryActor()
 	// static ConstructorHelpers::FObjectFinder<UMaterial>BaseMaterial(TEXT("/Script/Engine.Material'/Game/StarterContent/Materials/M_Basic_Wall.M_Basic_Wall'"));
  //    if (BaseMaterial.Succeeded())
  //    {
-	//     UMaterialInstanceDynamic* BaseMaterialInstanceDynamic = UMaterialInstanceDynamic::Create(BaseMaterial.Object, BaseMesh);
- //    	BaseMesh->SetMaterial(0, BaseMaterialInstanceDynamic);
+ //        UMaterialInstanceDynamic* BaseMaterialInstanceDynamic = UMaterialInstanceDynamic::Create(BaseMaterial.Object, BaseMesh);
+ //        BaseMesh->SetMaterial(0, BaseMaterialInstanceDynamic);
  //    }
 	
 	MyEnum = EMyEnumeration::Type1;
 
-	EnumStat = EMyEnumStatus::Idle;
+	//EnumStat = EMyEnumStatus::Idle;
 	
 }
 
@@ -45,8 +45,11 @@ void ABaseGeometryActor::BeginPlay()
 {
 	Super::BeginPlay();
 
+	//Load the initial location
 	GeoInitialLocation = GetActorLocation();
+	//Set initial color 
 	SetColor(GeometryData.GeoColor);
+	//Start the timer-handle to change linear color
 	GetWorldTimerManager().SetTimer(ColorChangeTimerHandle, this, &ABaseGeometryActor::OnTimeFire, GeometryData.ChangeColorTimeRate, true, -1);
 }
 
@@ -75,8 +78,24 @@ void ABaseGeometryActor::MoveLogic()
 		}
 		break;
 
-	case EMovementType::Static: break;
-	default: break;
+	case EMovementType::Linear:
+		{
+			FVector CurrentLocation = GetActorLocation();
+			if (GetWorld())
+			{
+				float Time = GetWorld()->GetTimeSeconds();
+				CurrentLocation.Z = GeoInitialLocation.Z + GeometryData.GeoAmplitude * Time;
+
+				SetActorLocation(CurrentLocation);
+			}
+		}
+
+	case EMovementType::Static:
+		break;
+
+	default:
+		UE_LOG(LogBaseGeometry, Warning, TEXT("Unhandled movement type"));
+		break;
 	}
 }
 
@@ -118,14 +137,14 @@ void ABaseGeometryActor::PostInitializeComponents()
 //Delegate Test
 void ABaseGeometryActor::ColorChangeFunc(const FLinearColor& Color, const FString& Name)
 {
-	UE_LOG(LogBaseGeometry, Warning, TEXT("Color set up to: %s"), *Color.ToString());
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Orange, (TEXT("Color set up to: %s"), *Color.ToString()));
+	//UE_LOG(LogBaseGeometry, Warning, TEXT("Color set up to: %s"), *Color.ToString());
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::White, (TEXT("Color set up to: %s"), *Color.ToString()));
 }
 
 void ABaseGeometryActor::TimerFinishedFunc(AActor* FinishedGeoActor)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, (TEXT("%s: Stop to change color!"), *GetNameSafe(FinishedGeoActor)));
-	UE_LOG(LogBaseGeometry, Error, TEXT("%s: Stop to change color!"), *GetNameSafe(FinishedGeoActor));
+	//UE_LOG(LogBaseGeometry, Error, TEXT("%s: Stop to change color!"), *GetNameSafe(FinishedGeoActor));
 }
 //Delegate Test
 

@@ -13,14 +13,14 @@ class UStaticMeshComponent;
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnTimerFinished, AActor*);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnColorChanged, const FLinearColor&, Color, const FString&, Name);
 
-UENUM()
-enum EMyEnumStatus : uint8
-{
-	Run,
-	Walk,
-	Idle,
-	Jump
-};
+// UENUM(BlueprintType)
+// enum class EMyEnumStatus : uint8
+// {
+// 	Run,
+// 	Walk,
+// 	Idle,
+// 	Jump
+// };
 
 
 //Enumeration of Movement Type
@@ -28,7 +28,8 @@ UENUM(BlueprintType)
 enum class EMovementType : uint8
 {
 	Sin UMETA(DisplayName = "SinState"),
-	Static UMETA(DisplayName = "SaticState")
+	Static UMETA(DisplayName = "SaticState"),
+	Linear UMETA(DisplayName = "LinearMove")
 };
 
 //Enumeration of Geometry type
@@ -153,11 +154,11 @@ public:
 	//Delegate Test function
 	
 	//Implementation function to heal character
-	virtual void HealInteract_Implementation(APawn* InstigatorPawn);
+	virtual void HealInteract_Implementation(APawn* InstigatorPawn) override;
 
 	TEnumAsByte<EMyEnumeration::EnumType>MyEnum;
 
-	EMyEnumStatus EnumStat;
+	//EMyEnumStatus EnumStat;
 
 	
 };
