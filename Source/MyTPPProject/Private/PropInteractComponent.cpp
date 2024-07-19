@@ -20,44 +20,45 @@ void UPropInteractComponent::PrimaryInteract()
 	ObjectiveQueryParam.AddObjectTypesToQuery(ECC_WorldDynamic);
 	ObjectiveQueryParam.AddObjectTypesToQuery(ECC_WorldStatic);
 
-	AActor* MyOwner = GetOwner();
-	check(MyOwner);
-	FVector EyeLocation;
-	FRotator EyeRotation;
-	MyOwner->GetActorEyesViewPoint(EyeLocation, EyeRotation);
-	FVector TraceEnd = EyeLocation + (EyeRotation.Vector() * 1000);
-
-	//Contain hit results in this array
-	TArray<FHitResult>Hits;
-	
-	float CollisionRadius = 30.0f;
-	FCollisionShape Shape;
-	Shape.SetSphere(CollisionRadius);
-
-	//返回碰撞布尔类型碰撞检测结果
-	bool bBlockingHit = GetWorld()->SweepMultiByObjectType(Hits, EyeLocation, TraceEnd, FQuat::Identity, ObjectiveQueryParam, Shape);
-
-	//根据碰撞检测结果确定检测射线的颜色，真为绿，假为红
-	FColor LineColor = bBlockingHit ? FColor::Green : FColor::Red;
-
-
-	for (FHitResult Hit : Hits)
+	if (AActor* MyOwner = GetOwner())
 	{
-		AActor* HitActor = Hit.GetActor();
-		if (ensure(HitActor))
+		FVector EyeLocation;
+		FRotator EyeRotation;
+		MyOwner->GetActorEyesViewPoint(EyeLocation, EyeRotation);
+		FVector TraceEnd = EyeLocation + (EyeRotation.Vector() * 1000);
+
+		//Contain hit results in this array
+		TArray<FHitResult>Hits;
+	
+		float CollisionRadius = 30.0f;
+		FCollisionShape Shape;
+		Shape.SetSphere(CollisionRadius);
+
+		//返回碰撞布尔类型碰撞检测结果
+		bool bBlockingHit = GetWorld()->SweepMultiByObjectType(Hits, EyeLocation, TraceEnd, FQuat::Identity, ObjectiveQueryParam, Shape);
+
+		//根据碰撞检测结果确定检测射线的颜色，真为绿，假为红
+		FColor LineColor = bBlockingHit ? FColor::Green : FColor::Red;
+
+
+		for (FHitResult Hit : Hits)
 		{
-			if (HitActor->Implements<UWuKongInterface_Prop>())
+			AActor* HitActor = Hit.GetActor();
+			if (ensure(HitActor))
 			{
-				APawn* MyPawn = Cast<APawn>(MyOwner);
-				IWuKongInterface_Prop::Execute_PropInteract(HitActor, MyPawn);
-				IWuKongInterface_Prop::Execute_GetInteractText(HitActor, MyPawn);
-				IWuKongInterface_Prop::Execute_HealInteract(HitActor, MyPawn);
-				break;
+				if (HitActor->Implements<UWuKongInterface_Prop>())
+				{
+					APawn* MyPawn = Cast<APawn>(MyOwner);
+					IWuKongInterface_Prop::Execute_PropInteract(HitActor, MyPawn);
+					IWuKongInterface_Prop::Execute_GetInteractText(HitActor, MyPawn);
+					IWuKongInterface_Prop::Execute_HealInteract(HitActor, MyPawn);
+					break;
+				}
 			}
+			DrawDebugSphere(GetWorld(), Hit.ImpactPoint, CollisionRadius, 32, LineColor, false, 2.0f, 1.0f);
 		}
-		DrawDebugSphere(GetWorld(), Hit.ImpactPoint, CollisionRadius, 32, LineColor, false, 2.0f, 1.0f);
+		DrawDebugLine(GetWorld(), EyeLocation, TraceEnd, LineColor, false, 2.0f, 2.0f);
 	}
-	DrawDebugLine(GetWorld(), EyeLocation, TraceEnd, LineColor, false, 2.0f, 2.0f);
 }
 
 
