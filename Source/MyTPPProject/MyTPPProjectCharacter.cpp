@@ -65,6 +65,7 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 	//Create Health component for the character, bind health initialization function when health changed
 	TppHealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
 	TppHealthComponent->OnHealthChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnHealthChangeFunc);
+	TppHealthComponent->OnDeath.AddUObject(this, &AMyTPPProjectCharacter::WuKongOnDeath);
 
 	//Create Power component for the character, bind power initialization function when power changed
 	TppPowerComponent = CreateDefaultSubobject<UPowerComponent>(TEXT("PowerComp"));
@@ -91,7 +92,7 @@ void AMyTPPProjectCharacter::BeginPlay()
 	}
 
 	//Bind death function after broadcasting OnDeath delegate
-	TppHealthComponent->OnDeath.AddUObject(this,&AMyTPPProjectCharacter::WuKongOnDeath);
+	//TppHealthComponent->OnDeath.AddUObject(this,&AMyTPPProjectCharacter::WuKongOnDeath);
 }
 
 //After finishing normal attack, execute this function to reset normal attack boolean value, then we can do normal attack again
