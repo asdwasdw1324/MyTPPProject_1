@@ -2,12 +2,12 @@
 
 
 #include "BaseProjectile.h"
-#include "Components\SphereComponent.h"
-#include "GameFramework\ProjectileMovementComponent.h"
-#include "Particles\ParticleSystemComponent.h"
-#include "Components\AudioComponent.h"
+#include "Components/SphereComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Components/AudioComponent.h"
 #include "Sound/SoundCue.h"
-#include "Kismet\GameplayStatics.h"
+#include "Kismet/GameplayStatics.h"
 #include "HealthComponent.h"
 
 
@@ -35,8 +35,8 @@ ABaseProjectile::ABaseProjectile()
 	MoveComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMoveComp"));
 	MoveComp->bRotationFollowsVelocity = true;
 	MoveComp->bInitialVelocityInLocalSpace = true;
-	MoveComp->ProjectileGravityScale = 1.5f;
-	MoveComp->InitialSpeed = 4000;
+	MoveComp->ProjectileGravityScale = 1.2f;
+	MoveComp->InitialSpeed = 4000.0f;
 	MoveComp->bShouldBounce = true;
 	MoveComp->Bounciness = 0.8f;
 
@@ -78,7 +78,7 @@ void ABaseProjectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* Othe
 		if (OtherActor != GetInstigator())
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Instigator is not same with attacked one!"));
-			UE_LOG(LogTemp, Warning, TEXT("Instigator is not same with attacked one!"));
+			//UE_LOG(LogTemp, Warning, TEXT("Instigator is not same with attacked one!"));
 		}
 	}
 }
@@ -95,7 +95,7 @@ void ABaseProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, A
 		if (HealthComp)
 		{
 			HealthComp->ApplyHealthChange(30.0f);
-			UE_LOG(LogTemp, Warning, TEXT("Take Damage by BaseProjectile!!!"));
+			//UE_LOG(LogTemp, Warning, TEXT("Take Damage by BaseProjectile!!!"));
 			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("Take Damage by BaseProjectile!!!"));
 		}
 	}

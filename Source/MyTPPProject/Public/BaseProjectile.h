@@ -13,6 +13,7 @@ class UAudioComponent;
 class USoundCue;
 class UCameraShakeBase;
 
+//CameraShake parameter struct
 USTRUCT(BlueprintType)
 struct FCameraShakeStruct
 {
@@ -36,11 +37,14 @@ class MYTPPPROJECT_API ABaseProjectile : public AActor
 
 protected:
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Effects")
 	TObjectPtr<UParticleSystem> ImpactVFX;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Effects")
 	TObjectPtr<USoundCue> ImpactSound;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Effects")
+	FCameraShakeStruct CameraShakeStruct;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<USphereComponent> SphereComp;
@@ -53,9 +57,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	TObjectPtr<UAudioComponent> AudioComp;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Effects")
-	FCameraShakeStruct CameraShakeStruct;
 
 	UFUNCTION()
 	virtual void OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
