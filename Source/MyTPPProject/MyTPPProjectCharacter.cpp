@@ -16,6 +16,7 @@
 #include "PowerComponent.h"
 #include "PropInteractComponent.h"
 #include "DashProjectile.h"
+#include "Components/WidgetComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -75,6 +76,9 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 	WuKongInteractComponent = CreateDefaultSubobject<UPropInteractComponent>(TEXT("InteractComp"));
 
 	IsDeath = false;
+
+	//ChargingProgressWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("ChargingProgress"));
+	//ChargingProgressWidget->SetupAttachment(GetMesh());
 }
 
 void AMyTPPProjectCharacter::BeginPlay()
@@ -93,6 +97,8 @@ void AMyTPPProjectCharacter::BeginPlay()
 
 	//Bind death function after broadcasting OnDeath delegate
 	//TppHealthComponent->OnDeath.AddUObject(this,&AMyTPPProjectCharacter::WuKongOnDeath);
+
+	
 }
 
 //After finishing normal attack, execute this function to reset normal attack boolean value, then we can do normal attack again

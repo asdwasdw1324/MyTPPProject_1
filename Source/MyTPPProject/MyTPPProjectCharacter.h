@@ -17,6 +17,7 @@ class UPowerComponent;
 class UPropInteractComponent;
 class ADashProjectile;
 struct FInputActionValue;
+class UWidgetComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -147,6 +148,9 @@ public:
 	void PowerHeal() const;
 	
 	virtual void PostInitializeComponents() override;
+	
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, meta=(AllowPrivateAccess = "true"))
+	// UWidgetComponent* ChargingProgressWidget;
 	
 };
 
