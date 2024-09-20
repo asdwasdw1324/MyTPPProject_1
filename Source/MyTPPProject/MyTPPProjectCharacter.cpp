@@ -27,6 +27,10 @@ DEFINE_LOG_CATEGORY_STATIC(TPPCharacterLog, All, All);
 
 AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 {
+
+	//PrimaryActorTick.bCanEverTick = false;
+	//PrimaryActorTick.bStartWithTickEnabled = false;
+	
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
@@ -34,6 +38,10 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
+
+	GetMesh()->bReceivesDecals = false;
+	GetMesh()->bCastDynamicShadow = false;
+	GetMesh()->CastShadow = false;
 
 	// Configure character movement
 	// Character moves in the direction of input...
@@ -48,16 +56,20 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+	CameraBoom->bEnableCameraLag = true;
+	CameraBoom->bEnableCameraRotationLag = true;
 
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
+	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);// Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
+	//FollowCamera->SetupAttachment(CameraBoom, TEXT("None"));
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	// Note: The skeletal mesh and animation blueprint references on the Mesh component (inherited from Character) 
@@ -77,8 +89,9 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 
 	IsDeath = false;
 
-	//ChargingProgressWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("ChargingProgress"));
-	//ChargingProgressWidget->SetupAttachment(GetMesh());
+	ChargingProgressWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("ChargingProgress"));
+	ChargingProgressWidget->SetupAttachment(GetMesh());
+	ChargingProgressWidget->SetWorldLocation(FVector(0.0f, 0.0f, 200.0f));
 }
 
 void AMyTPPProjectCharacter::BeginPlay()
@@ -155,6 +168,55 @@ void AMyTPPProjectCharacter::PostInitializeComponents()
 	//TPPPowerComponent->OnPowerChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnPowerChangeFunc);
 }
 
+bool AMyTPPProjectCharacter::WuKongNormalAttack()
+{
+	if (!this->IsNormalAttack)
+	{
+		if (TppPowerComponent->Power >= 5.0f)
+		{
+			this->IsNormalAttack = true;
+			PlayAnimMontage(NorAttackMontage);
+			SetIsNormalAttack();
+			ConsumePowerAfterTrigger(5.0f);
+			JudgePowerHealTimerHandleRunning();
+			
+			return true;
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("PowerNotEnoughForNormalAttack!!!")));
+		}
+	}
+	return false;
+}
+
+bool AMyTPPProjectCharacter::ConsumePowerAfterTrigger(float ConsumePower)
+{
+	this->CanTriggerAttack = true;
+	float NewPower = TppPowerComponent->Power - ConsumePower;
+	TppPowerComponent->SetPower(NewPower);
+
+	if (TppPowerComponent->Power < 0.0f)
+	{
+		return false;
+	}
+	return true;
+}
+
+void AMyTPPProjectCharacter::JudgePowerHealTimerHandleRunning()
+{
+	bool bIsTimerActive = GetWorld()->GetTimerManager().IsTimerActive(TppPowerComponent->PowerHealTimerHandle);
+
+	if (!bIsTimerActive)
+	{
+		GetWorld()->GetTimerManager().SetTimer(TppPowerComponent->PowerHealTimerHandle, this, &AMyTPPProjectCharacter::PowerHeal, 2.0f, true);
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString::Printf(TEXT("PowerisHealing!!!")));
+	}
+}
+
 void AMyTPPProjectCharacter::PrimaryInteract()
 {
 	if (WuKongInteractComponent)
@@ -197,6 +259,7 @@ void AMyTPPProjectCharacter::WuKongTeleport()
 			ADashProjectile* DashProjectile = World->SpawnActor<ADashProjectile>(DashProj, SpawnTM, SpawnParams);
 			
 			TppPowerComponent->SetPower(currentpower - 50.0f);
+
 			bool IsPowerHealTimerHandleActive = GetWorldTimerManager().IsTimerActive(TppPowerComponent->PowerHealTimerHandle);
 			if (!IsPowerHealTimerHandleActive)
 			{

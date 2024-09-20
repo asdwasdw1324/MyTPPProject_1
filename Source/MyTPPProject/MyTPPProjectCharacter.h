@@ -78,6 +78,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Interact)
 	TObjectPtr<UPropInteractComponent> WuKongInteractComponent;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Attack)
+	bool IsNormalAttack;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Attack)
+	bool CanTriggerAttack;
+
 protected:
 
 	/** Called for movement input */
@@ -109,9 +115,6 @@ protected:
 	/*Death montage*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<UAnimMontage>DeathAnim;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Attack)
-	bool IsNormalAttack = false;
 
 	UFUNCTION(BlueprintCallable, Category = Attack)
 	void SetIsNormalAttack();
@@ -148,9 +151,19 @@ public:
 	void PowerHeal() const;
 	
 	virtual void PostInitializeComponents() override;
-	
-	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, meta=(AllowPrivateAccess = "true"))
-	// UWidgetComponent* ChargingProgressWidget;
+
+	UFUNCTION(BlueprintCallable)
+	bool WuKongNormalAttack();
+
+	UFUNCTION(BlueprintCallable)
+	bool ConsumePowerAfterTrigger(float ConsumePower);
+
+	UFUNCTION(BlueprintCallable)
+	void JudgePowerHealTimerHandleRunning();
+
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, meta=(AllowPrivateAccess = "true"))
+	UWidgetComponent* ChargingProgressWidget;
 	
 };
 
