@@ -17,7 +17,9 @@
 #include "PropInteractComponent.h"
 #include "DashProjectile.h"
 #include "Components/WidgetComponent.h"
-#include "Kismet/KismetSystemLibrary.h"
+#include "DataAsset/DataAsset_InputConfig.h"
+#include "WuKongEnhancedInputComponent.h"
+#include "GamePlayTags/WuKongGamePlayTags.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 DEFINE_LOG_CATEGORY_STATIC(TPPCharacterLog, All, All);
@@ -28,8 +30,8 @@ DEFINE_LOG_CATEGORY_STATIC(TPPCharacterLog, All, All);
 AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 {
 
-	//PrimaryActorTick.bCanEverTick = false;
-	//PrimaryActorTick.bStartWithTickEnabled = false;
+	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bStartWithTickEnabled = false;
 	
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -98,18 +100,9 @@ void AMyTPPProjectCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
-
-	//Add Input Mapping Context (Enhanced input context system)
-	if (const APlayerController* PlayerController = Cast<APlayerController>(Controller))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}
-
-	//Bind death function after broadcasting OnDeath delegate
-	//TppHealthComponent->OnDeath.AddUObject(this,&AMyTPPProjectCharacter::WuKongOnDeath);
+	
+	/** Bind death function after broadcasting OnDeath delegate
+	TppHealthComponent->OnDeath.AddUObject(this,&AMyTPPProjectCharacter::WuKongOnDeath); */
 
 	
 }
@@ -291,29 +284,41 @@ void AMyTPPProjectCharacter::PowerHeal() const
 
 void AMyTPPProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
+
+	//Add Input Mapping Context (Enhanced input context system)
+	//Get the player controller
+	if (APlayerController* PlayerController = GetController<APlayerController>())
+	{
+		//Get the local player and get the enhanced input local player subsystem from it
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(InputConfigDataAsset->DefaultMappingContext, 0);
+		}
+	}
+	
 	// Set up action bindings
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
+	if (UWuKongEnhancedInputComponent* WuKongEnhancedInputComponent = CastChecked<UWuKongEnhancedInputComponent>(PlayerInputComponent)) {
 		
 		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		WuKongEnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		WuKongEnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
 		// Moving
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMyTPPProjectCharacter::Move);
+		WuKongEnhancedInputComponent->BindNativeInputAction(InputConfigDataAsset, WuKongGameplayTags::InputTag_Move, ETriggerEvent::Triggered, this, &AMyTPPProjectCharacter::Move);
 
 		// Looking
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMyTPPProjectCharacter::Look);
+		WuKongEnhancedInputComponent->BindNativeInputAction(InputConfigDataAsset, WuKongGameplayTags::InputTag_Look, ETriggerEvent::Triggered, this, &AMyTPPProjectCharacter::Look);
 
 		//NormalAttack
-		EnhancedInputComponent->BindAction(NormalAttackAction,ETriggerEvent::Started, this, &AMyTPPProjectCharacter::NormalAttack);
+		WuKongEnhancedInputComponent->BindNativeInputAction(InputConfigDataAsset, WuKongGameplayTags::InputTag_NormalAttack, ETriggerEvent::Started, this, &AMyTPPProjectCharacter::NormalAttack);
 
 		//ChargedAttack is bind in the Blueprint
 
 		//Interact
-		EnhancedInputComponent->BindAction(Interact_Prop, ETriggerEvent::Started, this, &AMyTPPProjectCharacter::PrimaryInteract);
+		WuKongEnhancedInputComponent->BindNativeInputAction(InputConfigDataAsset, WuKongGameplayTags::InputTag_Interact, ETriggerEvent::Started, this, &AMyTPPProjectCharacter::PrimaryInteract);
 
 		//Teleport
-		EnhancedInputComponent->BindAction(TeleportProjectile,ETriggerEvent::Started, this, &AMyTPPProjectCharacter::WuKongTeleport);
+		WuKongEnhancedInputComponent->BindNativeInputAction(InputConfigDataAsset, WuKongGameplayTags::InputTag_Teleport, ETriggerEvent::Started, this, &AMyTPPProjectCharacter::WuKongTeleport);
 	} 
 	else
 	{
@@ -333,7 +338,7 @@ void AMyTPPProjectCharacter::Move(const FInputActionValue& Value)
 		FRotator Rotation = Controller->GetControlRotation();
 		Rotation.Pitch = 0;
 		Rotation.Roll = 0;
-		FRotator YawRotation(0, Rotation.Yaw, 0);
+		FRotator YawRotation(Rotation.Pitch, Rotation.Yaw, Rotation.Roll);
 		//GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Cyan, FString::Printf(TEXT("The current controller YawRotation is: %s"), *YawRotation.ToString()));
 
 		// get forward vector

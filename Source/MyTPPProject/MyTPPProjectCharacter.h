@@ -16,8 +16,9 @@ class UAnimMontage;
 class UPowerComponent;
 class UPropInteractComponent;
 class ADashProjectile;
-struct FInputActionValue;
 class UWidgetComponent;
+class UDataAsset_InputConfig;
+struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -62,6 +63,9 @@ class AMyTPPProjectCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* Interact_Prop;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UDataAsset_InputConfig* InputConfigDataAsset;
+
 
 public:
 	AMyTPPProjectCharacter();
@@ -86,6 +90,7 @@ public:
 
 protected:
 
+#pragma region Inputs
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
@@ -103,7 +108,8 @@ protected:
 	/** Called for WuKongTeleport input */
 	UFUNCTION(BlueprintCallable)
 	void WuKongTeleport();
-
+#pragma endregion
+	
 	/*Normal attack montage*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attack)
 	TObjectPtr<UAnimMontage> NorAttackMontage;
