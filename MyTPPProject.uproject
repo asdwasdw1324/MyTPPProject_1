@@ -12,7 +12,8 @@
 				"Engine",
 				"AIModule",
 				"Niagara",
-				"EnhancedInput"
+				"EnhancedInput",
+				"GameplayAbilities"
 			]
 		}
 	],
@@ -74,6 +75,10 @@
 		},
 		{
 			"Name": "DeformerGraph",
+			"Enabled": true
+		},
+		{
+			"Name": "GameplayAbilities",
 			"Enabled": true
 		}
 	]

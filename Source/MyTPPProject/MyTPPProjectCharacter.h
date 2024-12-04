@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "AbilitySystemInterface.h"
 #include "MyTPPProjectCharacter.generated.h"
 
 class USpringArmComponent;
@@ -22,8 +23,11 @@ struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
+class UWuKongAttributeSet;
+class UWuKongAbilitySystemComponent;
+
 UCLASS(config=Game)
-class AMyTPPProjectCharacter : public ACharacter
+class AMyTPPProjectCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -69,6 +73,8 @@ class AMyTPPProjectCharacter : public ACharacter
 
 public:
 	AMyTPPProjectCharacter();
+
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const;
 	
 	//PowerComponent
 	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Attribute)
@@ -134,12 +140,25 @@ protected:
 	// To add mapping context
 	virtual void BeginPlay() override;
 
+	//~ Begin APawn Interface.
+	virtual void PossessedBy(AController* NewController) override;
+	//~ End APawn Interface
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AbilitySystem")
+	TObjectPtr<UWuKongAbilitySystemComponent> WuKongAbilitySystemComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AbilitySystem")
+	TObjectPtr<UWuKongAttributeSet> WuKongAttributeSet;
 
 public:
 	/** Returns CameraBoom subObject **/
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subObject **/
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	FORCEINLINE UWuKongAbilitySystemComponent* GetWuKongAbilitySystemComponent() const {return WuKongAbilitySystemComponent;}
+
+	FORCEINLINE UWuKongAttributeSet* GetWuKongWuKongAttributeSet() const {return WuKongAttributeSet;}
 
 	UFUNCTION()
 	void OnHealthChangeFunc(AActor* InstigatorActor, UHealthComponent* OwningComp, float NewHealth, float Delta);

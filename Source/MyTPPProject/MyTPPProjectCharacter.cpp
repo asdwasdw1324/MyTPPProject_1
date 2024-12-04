@@ -20,6 +20,8 @@
 #include "DataAsset/DataAsset_InputConfig.h"
 #include "WuKongEnhancedInputComponent.h"
 #include "GamePlayTags/WuKongGamePlayTags.h"
+#include "AbilitySystem/WuKongAttributeSet.h"
+#include "AbilitySystem/WuKongAbilitySystemComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 DEFINE_LOG_CATEGORY_STATIC(TPPCharacterLog, All, All);
@@ -94,6 +96,14 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 	ChargingProgressWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("ChargingProgress"));
 	ChargingProgressWidget->SetupAttachment(GetMesh());
 	ChargingProgressWidget->SetWorldLocation(FVector(0.0f, 0.0f, 200.0f));
+
+	WuKongAbilitySystemComponent = CreateDefaultSubobject<UWuKongAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	WuKongAttributeSet = CreateDefaultSubobject<UWuKongAttributeSet>(TEXT("AttributeSet"));
+}
+
+UAbilitySystemComponent* AMyTPPProjectCharacter::GetAbilitySystemComponent() const
+{
+	return GetWuKongAbilitySystemComponent();
 }
 
 void AMyTPPProjectCharacter::BeginPlay()
@@ -105,6 +115,24 @@ void AMyTPPProjectCharacter::BeginPlay()
 	TppHealthComponent->OnDeath.AddUObject(this,&AMyTPPProjectCharacter::WuKongOnDeath); */
 
 	
+}
+
+void AMyTPPProjectCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	if (WuKongAbilitySystemComponent)
+	{
+		WuKongAbilitySystemComponent->InitAbilityActorInfo(this, this);
+	}
+
+	if (WuKongAbilitySystemComponent && WuKongAttributeSet)
+	{
+		const FString ASCText = FString::Printf(TEXT("Owner Actor: %s, AvatarActor: %s"), *WuKongAbilitySystemComponent->GetOwnerActor()->GetActorLabel(), *WuKongAbilitySystemComponent->GetAvatarActor()->GetActorLabel());
+
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Silver, FString::Printf(TEXT("Ability system component valid.")) + ASCText);
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Silver, FString::Printf(TEXT("AttributeSet valid.")) + ASCText);
+	}
 }
 
 //After finishing normal attack, execute this function to reset normal attack boolean value, then we can do normal attack again
