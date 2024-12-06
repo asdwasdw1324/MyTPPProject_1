@@ -16,7 +16,6 @@
 #include "PowerComponent.h"
 #include "PropInteractComponent.h"
 #include "DashProjectile.h"
-#include "Components/WidgetComponent.h"
 #include "DataAsset/DataAsset_InputConfig.h"
 #include "WuKongEnhancedInputComponent.h"
 #include "GamePlayTags/WuKongGamePlayTags.h"
@@ -34,6 +33,8 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 
 	PrimaryActorTick.bCanEverTick = false;
 	PrimaryActorTick.bStartWithTickEnabled = false;
+
+	IsDeath = false;
 	
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -82,23 +83,23 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 	//Create Health component for the character, bind health initialization function when health changed
 	TppHealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
 	TppHealthComponent->OnHealthChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnHealthChangeFunc);
+	/** Bind Death function after broadcasting OnDeath delegate*/
 	TppHealthComponent->OnDeath.AddUObject(this, &AMyTPPProjectCharacter::WuKongOnDeath);
 
 	//Create Power component for the character, bind power initialization function when power changed
 	TppPowerComponent = CreateDefaultSubobject<UPowerComponent>(TEXT("PowerComp"));
 	TppPowerComponent->OnPowerChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnPowerChangeFunc);
 
-	//Create interact component for the character
+	//Create Interact component for the character
 	WuKongInteractComponent = CreateDefaultSubobject<UPropInteractComponent>(TEXT("InteractComp"));
 
-	IsDeath = false;
-
-	ChargingProgressWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("ChargingProgress"));
-	ChargingProgressWidget->SetupAttachment(GetMesh());
-	ChargingProgressWidget->SetWorldLocation(FVector(0.0f, 0.0f, 200.0f));
-
+	//Create AbilitySystem and AttributeSet component for the character
 	WuKongAbilitySystemComponent = CreateDefaultSubobject<UWuKongAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	WuKongAttributeSet = CreateDefaultSubobject<UWuKongAttributeSet>(TEXT("AttributeSet"));
+
+	//ChargingProgressWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("ChargingProgress"));
+	//ChargingProgressWidget->SetupAttachment(GetMesh());
+	//ChargingProgressWidget->SetWorldLocation(FVector(0.0f, 0.0f, 200.0f));
 }
 
 UAbilitySystemComponent* AMyTPPProjectCharacter::GetAbilitySystemComponent() const
@@ -110,10 +111,6 @@ void AMyTPPProjectCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
-	
-	/** Bind death function after broadcasting OnDeath delegate
-	TppHealthComponent->OnDeath.AddUObject(this,&AMyTPPProjectCharacter::WuKongOnDeath); */
-
 	
 }
 
@@ -130,15 +127,19 @@ void AMyTPPProjectCharacter::PossessedBy(AController* NewController)
 	{
 		const FString ASCText = FString::Printf(TEXT("Owner Actor: %s, AvatarActor: %s"), *WuKongAbilitySystemComponent->GetOwnerActor()->GetActorLabel(), *WuKongAbilitySystemComponent->GetAvatarActor()->GetActorLabel());
 
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Silver, FString::Printf(TEXT("Ability system component valid.")) + ASCText);
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Silver, FString::Printf(TEXT("AttributeSet valid.")) + ASCText);
+		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Silver, FString::Printf(TEXT("Ability system component valid.")) + ASCText);
+		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Silver, FString::Printf(TEXT("AttributeSet valid.")) + ASCText);
+		UE_LOG(TPPCharacterLog, Warning, TEXT("Owner Actor: %s, AvatarActor: %s"), *WuKongAbilitySystemComponent->GetOwnerActor()->GetActorLabel(), *WuKongAbilitySystemComponent->GetAvatarActor()->GetActorLabel());
 	}
 }
 
 //After finishing normal attack, execute this function to reset normal attack boolean value, then we can do normal attack again
-void AMyTPPProjectCharacter::SetIsNormalAttack()
+void AMyTPPProjectCharacter::SetIsNormalAttack(UAnimMontage* Montage, bool bInterrupted)
 {
-	IsNormalAttack = false;
+	if (Montage == NorAttackMontage && !bInterrupted)
+	{
+		IsNormalAttack = false;
+	}
 }
 
 //log when health changed
@@ -146,11 +147,11 @@ void AMyTPPProjectCharacter::OnHealthChangeFunc(AActor* InstigatorActor, UHealth
 {
 	if (GEngine)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("%s"), *GetNameSafe(InstigatorActor)));
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("%s"), *GetNameSafe(OwningComp)));
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("Health: %f"), NewHealth)); 
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("DeltaHealth: %f"), Delta));
-		//UE_LOG(TPPCharacterLog, Warning, TEXT("Health: %f"), Delta);
+		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("%s"), *GetNameSafe(InstigatorActor)));
+		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("%s"), *GetNameSafe(OwningComp)));
+		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("Health: %f"), NewHealth)); 
+		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("DeltaHealth: %f"), Delta));
+		UE_LOG(TPPCharacterLog, Warning, TEXT("Health: %f, DeltaHealth: %f"), NewHealth, Delta);
 	}
 }
 
@@ -159,11 +160,11 @@ void AMyTPPProjectCharacter::OnPowerChangeFunc(AActor* InstigatorActor, UPowerCo
 {
 	if (GEngine)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("%s"), *GetNameSafe(InstigatorActor)));
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("%s"), *GetNameSafe(OwningComp)));
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("Power: %f"), NewPower));
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("DeltaPower: %f"), Delta));
-		//UE_LOG(TPPCharacterLog, Warning, TEXT("DeltaPower: %f"), Delta);
+		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("%s"), *GetNameSafe(InstigatorActor)));
+		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("%s"), *GetNameSafe(OwningComp)));
+		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("Power: %f"), NewPower));
+		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("DeltaPower: %f"), Delta));
+		UE_LOG(TPPCharacterLog, Warning, TEXT("Power: %f, DeltaPower: %f"), NewPower, Delta);
 	}
 }
 
@@ -172,8 +173,15 @@ void AMyTPPProjectCharacter::WuKongOnDeath()
 {
 	UE_LOG(TPPCharacterLog, Error, TEXT("Player %s is dead!"), *GetNameSafe(this));
 	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Black, FString::Printf(TEXT("Player %s is dead!"), *GetNameSafe(this)));
-	
-	PlayAnimMontage(DeathAnim);
+
+	if (DeathAnim)
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (AnimInstance)
+		{
+			AnimInstance->Montage_Play(DeathAnim);
+		}
+	}
 	GetCharacterMovement()->DisableMovement();
 	SetLifeSpan(3.0f);
 
@@ -196,10 +204,14 @@ bool AMyTPPProjectCharacter::WuKongNormalAttack()
 		if (TppPowerComponent->Power >= 5.0f)
 		{
 			this->IsNormalAttack = true;
-			PlayAnimMontage(NorAttackMontage);
-			SetIsNormalAttack();
-			ConsumePowerAfterTrigger(5.0f);
-			JudgePowerHealTimerHandleRunning();
+			UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+			if (NorAttackMontage && AnimInstance)
+			{
+				AnimInstance->OnMontageEnded.AddDynamic(this, &AMyTPPProjectCharacter::SetIsNormalAttack);
+				AnimInstance->Montage_Play(NorAttackMontage);
+				ConsumePowerAfterTrigger(5.0f);
+				JudgePowerHealTimerHandleRunning();
+			}
 			
 			return true;
 		}
@@ -211,11 +223,10 @@ bool AMyTPPProjectCharacter::WuKongNormalAttack()
 	return false;
 }
 
-bool AMyTPPProjectCharacter::ConsumePowerAfterTrigger(float ConsumePower)
+bool AMyTPPProjectCharacter::ConsumePowerAfterTrigger(const float ConsumePower)
 {
 	this->CanTriggerAttack = true;
-	float NewPower = TppPowerComponent->Power - ConsumePower;
-	TppPowerComponent->SetPower(NewPower);
+	TppPowerComponent->SetPower(TppPowerComponent->Power - ConsumePower);
 
 	if (TppPowerComponent->Power < 0.0f)
 	{
@@ -298,8 +309,8 @@ void AMyTPPProjectCharacter::WuKongTeleport()
 	}
 }
 
-//Heal power after spawning teleport projectile
-void AMyTPPProjectCharacter::PowerHeal() const
+//Heal power after attacking/teleport(doing anything consume power)
+void AMyTPPProjectCharacter::PowerHeal()
 {
 	TppPowerComponent->PowerHealUpdate();
 }
@@ -308,7 +319,7 @@ void AMyTPPProjectCharacter::PowerHeal() const
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// Input
+// RegularInput
 
 void AMyTPPProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -327,7 +338,7 @@ void AMyTPPProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 	// Set up action bindings
 	if (UWuKongEnhancedInputComponent* WuKongEnhancedInputComponent = CastChecked<UWuKongEnhancedInputComponent>(PlayerInputComponent)) {
 		
-		// Jumping(Using default binding function)
+		// Jumping(Using default binding function for testing and distinguishing difference)
 		WuKongEnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		WuKongEnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
@@ -401,4 +412,9 @@ void AMyTPPProjectCharacter::Look(const FInputActionValue& Value)
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
+
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// RegularInput
 

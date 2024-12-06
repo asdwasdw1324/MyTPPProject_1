@@ -78,7 +78,7 @@ class AMyTPPProjectCharacter : public ACharacter, public IAbilitySystemInterface
 public:
 	AMyTPPProjectCharacter();
 
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const;
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	
 	//PowerComponent
 	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Attribute)
@@ -92,11 +92,22 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Interact)
 	TObjectPtr<UPropInteractComponent> WuKongInteractComponent;
 
+	//AbilitySystemComponent
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AbilitySystem)
+	TObjectPtr<UWuKongAbilitySystemComponent> WuKongAbilitySystemComponent;
+
+	//AttributeSetComponent
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AbilitySystem)
+	TObjectPtr<UWuKongAttributeSet> WuKongAttributeSet;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Attack)
 	bool IsNormalAttack;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Attack)
 	bool CanTriggerAttack;
+
+	UFUNCTION(BlueprintCallable, Category = Attack)
+	void SetIsNormalAttack(UAnimMontage* Montage, bool bInterrupted);
 
 protected:
 
@@ -111,14 +122,17 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = Attack)
 	void NormalAttack();
 
+	UFUNCTION(BlueprintCallable)
+	bool WuKongNormalAttack();
+
 	/*Called for Charged Attack, Implement in the Blueprint*/
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = Attack)
+	UFUNCTION(BlueprintImplementableEvent, Category = Attack)
 	void ChargedAttack_Triggered();
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = Attack)
+	UFUNCTION(BlueprintImplementableEvent, Category = Attack)
 	void ChargedAttack_Ongoing();
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = Attack)
+	UFUNCTION(BlueprintImplementableEvent, Category = Attack)
 	void ChargedAttack_Cancled();
 
 	/** Called for PrimaryInteract input */
@@ -131,21 +145,18 @@ protected:
 #pragma endregion
 	
 	/*Normal attack montage*/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attack)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation)
 	TObjectPtr<UAnimMontage> NorAttackMontage;
 
 	/*Teleport montage*/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Teleport)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation)
 	TObjectPtr<UAnimMontage> TeleportMontage;
 
 	/*Death montage*/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
 	TObjectPtr<UAnimMontage>DeathAnim;
-
-	UFUNCTION(BlueprintCallable, Category = Attack)
-	void SetIsNormalAttack();
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Projectile)
 	TSubclassOf<ADashProjectile>DashProj;
 	
 	// APawn interface
@@ -158,20 +169,14 @@ protected:
 	virtual void PossessedBy(AController* NewController) override;
 	//~ End APawn Interface
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AbilitySystem")
-	TObjectPtr<UWuKongAbilitySystemComponent> WuKongAbilitySystemComponent;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AbilitySystem")
-	TObjectPtr<UWuKongAttributeSet> WuKongAttributeSet;
-
 public:
 	/** Returns CameraBoom subObject **/
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subObject **/
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-
+	/** Returns AbilitySystemComponent subObject **/
 	FORCEINLINE UWuKongAbilitySystemComponent* GetWuKongAbilitySystemComponent() const {return WuKongAbilitySystemComponent;}
-
+	/** Returns AttributeSet subObject **/
 	FORCEINLINE UWuKongAttributeSet* GetWuKongWuKongAttributeSet() const {return WuKongAttributeSet;}
 
 	UFUNCTION()
@@ -186,13 +191,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = PlayerState)
 	bool IsDeath;
 	
-	UFUNCTION()
-	void PowerHeal() const;
+	UFUNCTION(BlueprintCallable)
+	void PowerHeal();
 	
 	virtual void PostInitializeComponents() override;
-
-	UFUNCTION(BlueprintCallable)
-	bool WuKongNormalAttack();
 
 	UFUNCTION(BlueprintCallable)
 	bool ConsumePowerAfterTrigger(float ConsumePower);
@@ -200,9 +202,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void JudgePowerHealTimerHandleRunning();
 
-private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, meta=(AllowPrivateAccess = "true"))
-	UWidgetComponent* ChargingProgressWidget;
+// private:
+// 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, meta=(AllowPrivateAccess = "true"))
+// 	UWidgetComponent* ChargingProgressWidget;
 	
 };
 
