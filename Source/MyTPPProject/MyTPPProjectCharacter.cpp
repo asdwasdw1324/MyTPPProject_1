@@ -171,7 +171,7 @@ void AMyTPPProjectCharacter::OnPowerChangeFunc(AActor* InstigatorActor, UPowerCo
 void AMyTPPProjectCharacter::WuKongOnDeath()
 {
 	UE_LOG(TPPCharacterLog, Error, TEXT("Player %s is dead!"), *GetNameSafe(this));
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Black, FString::Printf(TEXT("Player %s is dead!"), *GetNameSafe(this)));
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Black, FString::Printf(TEXT("Player %s is dead!"), *GetNameSafe(this)));
 	
 	PlayAnimMontage(DeathAnim);
 	GetCharacterMovement()->DisableMovement();
@@ -327,7 +327,7 @@ void AMyTPPProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 	// Set up action bindings
 	if (UWuKongEnhancedInputComponent* WuKongEnhancedInputComponent = CastChecked<UWuKongEnhancedInputComponent>(PlayerInputComponent)) {
 		
-		// Jumping
+		// Jumping(Using default binding function)
 		WuKongEnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		WuKongEnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
@@ -340,7 +340,10 @@ void AMyTPPProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 		//NormalAttack
 		WuKongEnhancedInputComponent->BindNativeInputAction(InputConfigDataAsset, WuKongGameplayTags::InputTag_NormalAttack, ETriggerEvent::Started, this, &AMyTPPProjectCharacter::NormalAttack);
 
-		//ChargedAttack is bind in the Blueprint
+		//ChargedAttack
+		WuKongEnhancedInputComponent->BindNativeInputAction(InputConfigDataAsset, WuKongGameplayTags::InputTag_ChargedAttack, ETriggerEvent::Triggered, this, &AMyTPPProjectCharacter::ChargedAttack_Triggered);
+		WuKongEnhancedInputComponent->BindNativeInputAction(InputConfigDataAsset, WuKongGameplayTags::InputTag_ChargedAttack, ETriggerEvent::Ongoing, this, &AMyTPPProjectCharacter::ChargedAttack_Ongoing);
+		WuKongEnhancedInputComponent->BindNativeInputAction(InputConfigDataAsset, WuKongGameplayTags::InputTag_ChargedAttack, ETriggerEvent::Canceled, this, &AMyTPPProjectCharacter::ChargedAttack_Cancled);
 
 		//Interact
 		WuKongEnhancedInputComponent->BindNativeInputAction(InputConfigDataAsset, WuKongGameplayTags::InputTag_Interact, ETriggerEvent::Started, this, &AMyTPPProjectCharacter::PrimaryInteract);

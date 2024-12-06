@@ -4,6 +4,7 @@
 #include "PowerComponent.h"
 #include "HealthComponent.h"
 #include "MyTPPProject\MyTPPProjectCharacter.h"
+#include  "AbilitySystem\WuKongAbilitySystemComponent.h"
 
 // Sets default values for this component's properties
 UPowerComponent::UPowerComponent()
@@ -61,7 +62,7 @@ float UPowerComponent::SetPower(float NewPower)
 	Power = FMath::Clamp(NewPower, 0.0f, MaxPower);
 	float DeltaPower = Power - LastPower;
 
-	OnPowerChanged.Broadcast(nullptr, this, Power, DeltaPower);
+	OnPowerChanged.Broadcast(GetOwner(), this, Power, DeltaPower);
 
 	return Power;
 }
