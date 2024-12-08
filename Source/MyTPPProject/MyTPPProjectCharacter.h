@@ -103,9 +103,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Attack)
 	bool IsNormalAttack;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Attack)
-	bool CanTriggerAttack;
-
 	UFUNCTION(BlueprintCallable, Category = Attack)
 	void SetIsNormalAttack(UAnimMontage* Montage, bool bInterrupted);
 
@@ -178,6 +175,10 @@ public:
 	FORCEINLINE UWuKongAbilitySystemComponent* GetWuKongAbilitySystemComponent() const {return WuKongAbilitySystemComponent;}
 	/** Returns AttributeSet subObject **/
 	FORCEINLINE UWuKongAttributeSet* GetWuKongWuKongAttributeSet() const {return WuKongAttributeSet;}
+	/** Returns HealthComponent subObject **/
+	FORCEINLINE UHealthComponent* GetTppHealthComponent() const { return TppHealthComponent; }
+	/** Returns PowerComponent subObject **/
+	FORCEINLINE UPowerComponent* GetTppPowerComponent() const { return TppPowerComponent; }
 
 	UFUNCTION()
 	void OnHealthChangeFunc(AActor* InstigatorActor, UHealthComponent* OwningComp, float NewHealth, float Delta);
@@ -188,17 +189,14 @@ public:
 	//static single broadcast
 	void WuKongOnDeath();
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = PlayerState)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = PlayerState)
 	bool IsDeath;
 	
 	UFUNCTION(BlueprintCallable)
 	void PowerHeal();
 	
 	virtual void PostInitializeComponents() override;
-
-	UFUNCTION(BlueprintCallable)
-	bool ConsumePowerAfterTrigger(float ConsumePower);
-
+	
 	UFUNCTION(BlueprintCallable)
 	void JudgePowerHealTimerHandleRunning();
 

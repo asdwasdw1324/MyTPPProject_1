@@ -82,13 +82,13 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 
 	//Create Health component for the character, bind health initialization function when health changed
 	TppHealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
-	TppHealthComponent->OnHealthChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnHealthChangeFunc);
+	//TppHealthComponent->OnHealthChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnHealthChangeFunc);
 	/** Bind Death function after broadcasting OnDeath delegate*/
-	TppHealthComponent->OnDeath.AddUObject(this, &AMyTPPProjectCharacter::WuKongOnDeath);
+	//TppHealthComponent->OnDeath.AddUObject(this, &AMyTPPProjectCharacter::WuKongOnDeath);
 
 	//Create Power component for the character, bind power initialization function when power changed
 	TppPowerComponent = CreateDefaultSubobject<UPowerComponent>(TEXT("PowerComp"));
-	TppPowerComponent->OnPowerChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnPowerChangeFunc);
+	//TppPowerComponent->OnPowerChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnPowerChangeFunc);
 
 	//Create Interact component for the character
 	WuKongInteractComponent = CreateDefaultSubobject<UPropInteractComponent>(TEXT("InteractComp"));
@@ -180,21 +180,25 @@ void AMyTPPProjectCharacter::WuKongOnDeath()
 		if (AnimInstance)
 		{
 			AnimInstance->Montage_Play(DeathAnim);
+			IsDeath = true;
+			//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Purple, FString::Printf(TEXT("Player %s is dead!"), *GetNameSafe(this)));
 		}
 	}
+
 	GetCharacterMovement()->DisableMovement();
 	SetLifeSpan(3.0f);
-
+ 
 	//NAME_Spectating
 	Controller->ChangeState(EName::Spectating);
-	IsDeath = true;
 }
 
 void AMyTPPProjectCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	//TPPHealthComponent->OnHealthChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnHealthChangeFunc);
-	//TPPPowerComponent->OnPowerChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnPowerChangeFunc);
+	GetTppHealthComponent()->OnHealthChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnHealthChangeFunc);
+	GetTppHealthComponent()->OnDeath.AddUObject(this, &AMyTPPProjectCharacter::WuKongOnDeath);
+	GetTppPowerComponent()->OnPowerChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnPowerChangeFunc);
+	
 }
 
 bool AMyTPPProjectCharacter::WuKongNormalAttack()
@@ -209,7 +213,6 @@ bool AMyTPPProjectCharacter::WuKongNormalAttack()
 			{
 				AnimInstance->OnMontageEnded.AddDynamic(this, &AMyTPPProjectCharacter::SetIsNormalAttack);
 				AnimInstance->Montage_Play(NorAttackMontage);
-				ConsumePowerAfterTrigger(5.0f);
 				JudgePowerHealTimerHandleRunning();
 			}
 			
@@ -221,18 +224,6 @@ bool AMyTPPProjectCharacter::WuKongNormalAttack()
 		}
 	}
 	return false;
-}
-
-bool AMyTPPProjectCharacter::ConsumePowerAfterTrigger(const float ConsumePower)
-{
-	this->CanTriggerAttack = true;
-	TppPowerComponent->SetPower(TppPowerComponent->Power - ConsumePower);
-
-	if (TppPowerComponent->Power < 0.0f)
-	{
-		return false;
-	}
-	return true;
 }
 
 void AMyTPPProjectCharacter::JudgePowerHealTimerHandleRunning()

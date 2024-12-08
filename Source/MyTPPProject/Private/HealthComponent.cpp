@@ -2,9 +2,10 @@
 
 
 #include "HealthComponent.h"
-#include "Animation\AnimMontage.h"
+#include "Animation/AnimMontage.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
+#include "MyTPPProject/MyTPPProjectCharacter.h"
 
 DEFINE_LOG_CATEGORY_STATIC(HealthCompLog, All, All)
 
@@ -17,8 +18,14 @@ UHealthComponent::UHealthComponent()
 
 	Health = MaxHealth;
 
+	bHasTriggeredDeath = false;
+
 	SetIsReplicatedByDefault(true);
 
+	// if (AActor* ComponentOwnerCharacter = GetOwner())
+	// {
+	// 	ComponentOwnerCharacter->OnTakeAnyDamage.AddDynamic(this, &UHealthComponent::OnTakeAnyDamageHandle);
+	// }
 }
 
 
@@ -28,20 +35,12 @@ void UHealthComponent::BeginPlay()
 	Super::BeginPlay();
 
 	SetHealth(MaxHealth);
-
-	AActor* ComponentOwner = GetOwner();
-	if (ComponentOwner)
-	{
-		ComponentOwner->OnTakeAnyDamage.AddDynamic(this, &UHealthComponent::OnTakeAnyDamageHandle);
-	}
-
-	
 }
 
 // Apply damage by base projectile
-bool UHealthComponent::ApplyHealthChange(float Delta)
+bool UHealthComponent::ApplyHealthChange(const float Delta)
 {
-	if (Delta <= 0 || ApplyGameEnd() || !GetWorld())
+	if (Delta <= 0 || !GetWorld() || bHasTriggeredDeath)
 	{
 		return false;
 	}
@@ -50,7 +49,11 @@ bool UHealthComponent::ApplyHealthChange(float Delta)
 
 	if (ApplyGameEnd())
 	{
-		OnDeath.Broadcast();
+		if (!bHasTriggeredDeath)
+		{
+			OnDeath.Broadcast();
+			bHasTriggeredDeath = true;
+		}
 	}
 	else if (HealthStruct.FAutoHeal)
 	{
@@ -65,9 +68,9 @@ bool UHealthComponent::ApplyGameEnd()
 {
 	if (FMath::IsNearlyZero(Health))
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Red, FString::Printf(TEXT("You have died, Game Over!!!")));
-		UE_LOG(HealthCompLog, Error, TEXT("You have died, Game Over!!!"));
-
+		//GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Red, FString::Printf(TEXT("You have died, Game Over!!!")));
+		//UE_LOG(HealthCompLog, Error, TEXT("You have died, Game Over!!!"));
+		
 		GetWorld()->GetTimerManager().ClearTimer(HealTimerHandle);
 		GetWorld()->GetTimerManager().ClearTimer(ProjectileDamageHealTimerHandle);
 		return true;
@@ -80,26 +83,32 @@ bool UHealthComponent::ApplyGameEnd()
 }
 
 // Apply damage by radius area
-void UHealthComponent::OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
-{
-	if (Damage <= 0 || ApplyGameEnd() || !GetWorld())
-	{
-		return;
-	}
-	SetHealth(Health - Damage);
+// bool UHealthComponent::OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+// {
+// 	if (Damage <= 0 || !GetWorld() || bHasTriggeredDeath)
+// 	{
+// 		return false;
+// 	}
+//
+// 	SetHealth(Health - Damage);
+//
+// 	if (ApplyGameEnd())
+// 	{
+// 		if (!bHasTriggeredDeath)
+// 		{
+// 			OnDeath.Broadcast();
+// 			bHasTriggeredDeath = true;
+// 		}
+// 	}
+// 	else if (HealthStruct.FAutoHeal)
+// 	{
+// 		GetWorld()->GetTimerManager().SetTimer(ProjectileDamageHealTimerHandle, this, &UHealthComponent::HealUpdate, HealthStruct.FHealUpdateTime, true, HealthStruct.FHealDelay);
+// 	}
+// 	
+// 	return true;
+// }
 
-	if (ApplyGameEnd())
-	{
-		//AddDynamic on the character execute OnDeath function
-		OnDeath.Broadcast();
-	}
-	else if (HealthStruct.FAutoHeal)
-	{
-		GetWorld()->GetTimerManager().SetTimer(HealTimerHandle, this, &UHealthComponent::HealUpdate, HealthStruct.FHealUpdateTime, true, HealthStruct.FHealDelay);
-	}
-
-}
-
+//Health recover automatically
 void UHealthComponent::HealUpdate()
 {
 	SetHealth(Health + HealthStruct.FHealModifier);
@@ -113,10 +122,19 @@ void UHealthComponent::HealUpdate()
 
 void UHealthComponent::SetHealth(float NewHealth)
 {
+	float ClampedHealth = FMath::Clamp(NewHealth, 0.0f, MaxHealth);
+
+	if (FMath::IsNearlyEqual(ClampedHealth,Health) && ClampedHealth != MaxHealth)
+	{
+		return;
+	}
+	
 	float LastHealth = GetHealth();
-	Health = FMath::Clamp(NewHealth, 0.0f, MaxHealth);
+	Health = ClampedHealth;
 	float DeltaHealth = LastHealth - Health;
 
-	OnDamageTaking.Broadcast(Health);
-	OnHealthChanged.Broadcast(nullptr, this, Health, DeltaHealth);
+	//OnDamageTaking.Broadcast(Health);
+	OnHealthChanged.Broadcast(GetOwner(), this, Health, DeltaHealth);
+	
+	
 }

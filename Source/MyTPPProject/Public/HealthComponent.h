@@ -8,7 +8,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnHealthChanged, AActor*, InstigatorActor, UHealthComponent*, OwningComp, float, NewHealth, float, Delta);
 DECLARE_MULTICAST_DELEGATE(FOnDeath);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnDamageTaking, float);
+//DECLARE_MULTICAST_DELEGATE_OneParam(FOnDamageTaking, float);
 
 //Heal parameter struct
 USTRUCT(BlueprintType)
@@ -20,13 +20,13 @@ struct FHealStruct
 	bool FAutoHeal = true;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Heal", meta = (EditCondition = "AutoHeal"))
-	float FHealUpdateTime = 1.0f;
+	float FHealUpdateTime = 2.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Heal", meta = (EditCondition = "AutoHeal"))
 	float FHealDelay = 3.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Heal", meta = (EditCondition = "AutoHeal"))
-	float FHealModifier = 2.0f;
+	float FHealModifier = 1.0f;
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -59,18 +59,20 @@ public:
 	FOnHealthChanged OnHealthChanged;
 
 	FOnDeath OnDeath;
-	FOnDamageTaking OnDamageTaking;
+	//FOnDamageTaking OnDamageTaking;
 
 	//Get current health value
-	float GetHealth() const {return Health;}
+	FORCEINLINE float GetHealth() const {return Health;}
 
 	//Set new health value
 	UFUNCTION(BlueprintCallable)
 	void SetHealth(float NewHealth);
 
-	UFUNCTION(Blueprintcallable, Category = "Damage")
-	void OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+	//UFUNCTION(Blueprintcallable, Category = "Damage")
+	//bool OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Health")
+	bool bHasTriggeredDeath;
 
 protected:
 	// Called when the game starts
