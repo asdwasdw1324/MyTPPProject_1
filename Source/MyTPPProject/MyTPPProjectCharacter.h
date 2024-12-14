@@ -19,6 +19,7 @@ class UPropInteractComponent;
 class ADashProjectile;
 class UWidgetComponent;
 class UDataAsset_InputConfig;
+class UDataAsset_StartUpDataBase;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
@@ -74,6 +75,8 @@ class AMyTPPProjectCharacter : public ACharacter, public IAbilitySystemInterface
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UDataAsset_InputConfig* InputConfigDataAsset;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = CharacterData, meta = (AllowPrivateAccess = "true"))
+	TSoftObjectPtr<UDataAsset_StartUpDataBase> CharacterStartUpData;
 
 public:
 	AMyTPPProjectCharacter();
@@ -119,6 +122,7 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = Attack)
 	void NormalAttack();
 
+	/*C++ implementation for part of NormalAttack, completed implementation is in BluePrint*/
 	UFUNCTION(BlueprintCallable)
 	bool WuKongNormalAttack();
 
@@ -131,6 +135,9 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = Attack)
 	void ChargedAttack_Cancled();
+
+	UFUNCTION(BlueprintCallable, Category = Attack)
+	void ActiveEnhancedAttackStatus();
 
 	/** Called for PrimaryInteract input */
 	UFUNCTION(BlueprintCallable)

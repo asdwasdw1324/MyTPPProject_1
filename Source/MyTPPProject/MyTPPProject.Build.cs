@@ -18,6 +18,7 @@ public class MyTPPProject : ModuleRules
 			"GameplayTasks", 
 			"UMG", 
 			"GameplayTags", 
-			"GameplayAbilities" });
+			"GameplayAbilities"
+		});
 	}
 }

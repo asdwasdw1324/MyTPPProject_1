@@ -2,7 +2,7 @@
 
 
 #include "HealthComponent.h"
-#include "Animation/AnimMontage.h"
+
 #include "Engine/World.h"
 #include "TimerManager.h"
 #include "MyTPPProject/MyTPPProjectCharacter.h"
@@ -15,9 +15,7 @@ UHealthComponent::UHealthComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
-
-	Health = MaxHealth;
-
+	
 	bHasTriggeredDeath = false;
 
 	SetIsReplicatedByDefault(true);
@@ -46,10 +44,10 @@ bool UHealthComponent::ApplyHealthChange(const float Delta)
 	}
 
 	SetHealth(Health - Delta);
-
+ 
 	if (ApplyGameEnd())
 	{
-		if (!bHasTriggeredDeath)
+		if (!bHasTriggeredDeath and OnDeath.IsBound())
 		{
 			OnDeath.Broadcast();
 			bHasTriggeredDeath = true;

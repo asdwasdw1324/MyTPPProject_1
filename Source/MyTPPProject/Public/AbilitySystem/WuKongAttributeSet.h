@@ -13,5 +13,8 @@ UCLASS()
 class MYTPPPROJECT_API UWuKongAttributeSet : public UAttributeSet
 {
 	GENERATED_BODY()
-	
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
+	FGameplayAttributeData AttackDamage;
 };
