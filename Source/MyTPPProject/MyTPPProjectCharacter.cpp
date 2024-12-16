@@ -114,6 +114,7 @@ void AMyTPPProjectCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 	
+	
 }
 
 void AMyTPPProjectCharacter::PossessedBy(AController* NewController)
@@ -124,18 +125,7 @@ void AMyTPPProjectCharacter::PossessedBy(AController* NewController)
 	{
 		WuKongAbilitySystemComponent->InitAbilityActorInfo(this, this);
 	}
-
-	if (!CharacterStartUpData.IsNull())
-	{
-		if (UDataAsset_StartUpDataBase* LoadData = CharacterStartUpData.LoadSynchronous())
-		{
-			LoadData->GiveToAbilitySystemComponent(WuKongAbilitySystemComponent);
-		}
-	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Magenta, FString::Printf(TEXT("CharacterData is null! %s"), *GetName()));
-	}
+	
 }
 
 //After finishing normal attack, execute this function to reset normal attack boolean value, then we can do normal attack again
@@ -177,7 +167,7 @@ void AMyTPPProjectCharacter::OnPowerChangeFunc(AActor* InstigatorActor, UPowerCo
 void AMyTPPProjectCharacter::WuKongOnDeath()
 {
 	UE_LOG(TPPCharacterLog, Error, TEXT("Player %s is dead!"), *GetNameSafe(this));
-	//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Black, FString::Printf(TEXT("Player %s is dead!"), *GetNameSafe(this)));
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Black, FString::Printf(TEXT("Player %s is dead!"), *GetNameSafe(this)));
 
 	if (DeathAnim)
 	{
@@ -185,23 +175,21 @@ void AMyTPPProjectCharacter::WuKongOnDeath()
 		if (AnimInstance)
 		{
 			AnimInstance->Montage_Play(DeathAnim);
-			// if (AnimInstance->Montage_IsPlaying(DeathAnim))
-			// {
-			// 	UE_LOG(LogTemp, Warning, TEXT("Death animation is playing."));
-			// }
-			// else
-			// {
-			// 	UE_LOG(LogTemp, Error, TEXT("Death animation failed to play."));
-			// }
-			
+			if (AnimInstance->Montage_IsPlaying(DeathAnim))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Death animation is playing."));
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("Death animation failed to play."));
+			}
 			IsDeath = true;
-			//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Purple, FString::Printf(TEXT("IsDeath: %s"), IsDeath ? TEXT("true") : TEXT("false")));
-			//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Purple, FString::Printf(TEXT("Should Play Death Animation")));
+			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Black, FString::Printf(TEXT("IsDeath: %s"), IsDeath ? TEXT("true") : TEXT("false")));
 		}
 	}
 
 	GetCharacterMovement()->DisableMovement();
-	SetLifeSpan(3.0f);
+	SetLifeSpan(5.0f);
  
 	//NAME_Spectating
 	Controller->ChangeState(EName::Spectating);
@@ -263,8 +251,17 @@ void AMyTPPProjectCharacter::ActiveEnhancedAttackStatus()
 {
 	if (WuKongAbilitySystemComponent)
 	{
-		bool ActiveResult = WuKongAbilitySystemComponent->TryActivateAbilityByClass(UWuKongGameplayAbility::StaticClass());
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Cyan, FString::Printf(TEXT("Active Enhanced Attack : %s"), ActiveResult ? TEXT("true") : TEXT("false")));
+		if (!CharacterStartUpData.IsNull())
+		{
+			if (UDataAsset_StartUpDataBase* LoadData = CharacterStartUpData.LoadSynchronous())
+			{
+				LoadData->GiveToAbilitySystemComponent(WuKongAbilitySystemComponent);
+			}
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Magenta, FString::Printf(TEXT("CharacterData is null! %s"), *GetName()));
+		}
 	}
 }
 

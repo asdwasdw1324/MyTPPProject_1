@@ -8,7 +8,7 @@
 
 void UDataAsset_StartUpDataBase::GiveToAbilitySystemComponent(UWuKongAbilitySystemComponent* ASCToGive, int32 ApplyLevel)
 {
-	ensureMsgf(ASCToGive, TEXT("ASC is empty!"));
+	ensureMsgf(ASCToGive, TEXT("AbilitySystemComponent is empty!"));
 
 	GrantAbilities(ActivateOnGivenAbilities, ASCToGive, ApplyLevel);
 	GrantAbilities(ReactiveAbilities, ASCToGive, ApplyLevel);

@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "AbilitySystemInterface.h"
+#include "GameplayAbilitySpecHandle.h"
 #include "MyTPPProjectCharacter.generated.h"
 
 class USpringArmComponent;
@@ -21,6 +22,7 @@ class UWidgetComponent;
 class UDataAsset_InputConfig;
 class UDataAsset_StartUpDataBase;
 struct FInputActionValue;
+struct FGameplayAbilitySpecHandle;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -172,6 +174,8 @@ protected:
 	//~ Begin APawn Interface.
 	virtual void PossessedBy(AController* NewController) override;
 	//~ End APawn Interface
+
+	FGameplayAbilitySpecHandle WuKongGameplayEnhancedAttackAbilitySpecHandle;
 
 public:
 	/** Returns CameraBoom subObject **/

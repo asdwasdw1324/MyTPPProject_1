@@ -14,6 +14,12 @@ void UWuKongGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* Acto
 		{
 			ActorInfo->AbilitySystemComponent->TryActivateAbility(Spec.Handle);
 		}
+		FTimerHandle RestoreEnhancedAttackTimerHandle;
+		ActorInfo->OwnerActor->GetWorld()->GetTimerManager().SetTimer(RestoreEnhancedAttackTimerHandle, [this, SpecHandle = Spec.Handle, AbilitySystemComponent = ActorInfo->AbilitySystemComponent]()
+		{
+			AbilitySystemComponent->ClearAbility(SpecHandle);
+			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Orange, FString::Printf(TEXT("Clear Ability Completed!")));
+		}, 10.0f, false);  // 10秒后恢复
 	}
 }
 
