@@ -12,14 +12,8 @@ void UWuKongGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* Acto
 	{
 		if (ActorInfo && !Spec.IsActive())
 		{
-			ActorInfo->AbilitySystemComponent->TryActivateAbility(Spec.Handle);
+			bEnhancedAttackActivated = ActorInfo->AbilitySystemComponent->TryActivateAbility(Spec.Handle);
 		}
-		FTimerHandle RestoreEnhancedAttackTimerHandle;
-		ActorInfo->OwnerActor->GetWorld()->GetTimerManager().SetTimer(RestoreEnhancedAttackTimerHandle, [this, SpecHandle = Spec.Handle, AbilitySystemComponent = ActorInfo->AbilitySystemComponent]()
-		{
-			AbilitySystemComponent->ClearAbility(SpecHandle);
-			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Orange, FString::Printf(TEXT("Clear Ability Completed!")));
-		}, 10.0f, false);  // 10秒后恢复
 	}
 }
 
@@ -27,40 +21,21 @@ void UWuKongGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 
-	if (AbilityActivationPolicy == EWuKongAbilityActivationPolicy::OnGiven)
+	if (ActorInfo)
 	{
-		if (ActorInfo)
-		{
-			ActorInfo->AbilitySystemComponent->ClearAbility(Handle);
-		}
-	}
-}
-
-void UWuKongGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
-{
-	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
-
-	if (AbilityActivationPolicy == EWuKongAbilityActivationPolicy::OnTriggered)
-	{
-		FGameplayAbilitySpec* Spec = ActorInfo->AbilitySystemComponent->FindAbilitySpecFromHandle(Handle);
-		if (ActorInfo && !(*Spec).IsActive())
-		{
-			ActorInfo->AbilitySystemComponent->TryActivateAbility(Handle);
-		}
-
 		FTimerHandle RestoreEnhancedAttackTimerHandle;
-		ActorInfo->OwnerActor->GetWorld()->GetTimerManager().SetTimer(RestoreEnhancedAttackTimerHandle, [this, ActorInfo, Handle]()
+		ActorInfo->OwnerActor->GetWorld()->GetTimerManager().SetTimer(RestoreEnhancedAttackTimerHandle, [this, Handle, AbilitySystemComponent = ActorInfo->AbilitySystemComponent]()
 		{
-			if (AbilityActivationPolicy == EWuKongAbilityActivationPolicy::OnTriggered)
-			{
-				if (ActorInfo)
-				{
-					ActorInfo->AbilitySystemComponent->ClearAbility(Handle);
-				}
-			}
-		}, 10.0f, false);  // 10秒后恢复
+			AbilitySystemComponent->ClearAbility(Handle);
+			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Orange, FString::Printf(TEXT("Clear Ability Completed!")));
+		}, 5.0f, false);  // 5秒后恢复
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Orange, FString::Printf(TEXT("Can not Clear Ability!")));
 	}
 }
+
 
 
 

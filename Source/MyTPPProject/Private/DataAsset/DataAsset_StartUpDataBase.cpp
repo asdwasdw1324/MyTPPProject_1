@@ -17,7 +17,7 @@ void UDataAsset_StartUpDataBase::GiveToAbilitySystemComponent(UWuKongAbilitySyst
 
 void UDataAsset_StartUpDataBase::GrantAbilities(const TArray<TSubclassOf<UWuKongGameplayAbility>>& AbilitiesToGive, UWuKongAbilitySystemComponent* ASCToGive, int32 ApplyLevel)
 {
-	if (AbilitiesToGive.IsEmpty())
+	if (AbilitiesToGive.IsEmpty() || !ASCToGive)
 	{
 		return;
 	}

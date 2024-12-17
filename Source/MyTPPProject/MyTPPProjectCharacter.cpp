@@ -253,9 +253,9 @@ void AMyTPPProjectCharacter::ActiveEnhancedAttackStatus()
 	{
 		if (!CharacterStartUpData.IsNull())
 		{
-			if (UDataAsset_StartUpDataBase* LoadData = CharacterStartUpData.LoadSynchronous())
+			if (UDataAsset_StartUpDataBase* LoadedData = CharacterStartUpData.LoadSynchronous())
 			{
-				LoadData->GiveToAbilitySystemComponent(WuKongAbilitySystemComponent);
+				LoadedData->GiveToAbilitySystemComponent(WuKongAbilitySystemComponent);
 			}
 		}
 		else
