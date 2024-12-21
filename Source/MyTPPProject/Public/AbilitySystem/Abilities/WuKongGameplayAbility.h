@@ -32,4 +32,5 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "WuKongAbility")
 	EWuKongAbilityActivationPolicy AbilityActivationPolicy = EWuKongAbilityActivationPolicy::OnTriggered;
 	
+	
 };
