@@ -30,19 +30,21 @@ void UWuKongGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* Acto
 						ActorInfo->OwnerActor->GetWorld()->GetTimerManager().ClearTimer(RestoreEnhancedAttackTimerHandle);
 					}
 
-					//TimerDelegate
 					FTimerDelegate TimerDelegate;
-					TimerDelegate.BindLambda([this, Handle = Spec.Handle, ASC = ActorInfo->AbilitySystemComponent]()
+					TimerDelegate.BindLambda([this, Handle = Spec.Handle, ActorInfo]()
 					{
-						if (ASC.IsValid())
+						if (bEnhancedAttackActivated)  // 确保状态仍然是激活的
 						{
-							//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Cyan, TEXT("Timer triggered ability cancellation"));
-							ASC->CancelAbilityHandle(Handle);
+							EndAbility(Handle, ActorInfo, FGameplayAbilityActivationInfo(), true, false);
 						}
 					});
 					
-					ActorInfo->OwnerActor->GetWorld()->GetTimerManager().SetTimer(RestoreEnhancedAttackTimerHandle, TimerDelegate, 5.0f, false);
-					//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Timer set successfully"));
+					ActorInfo->OwnerActor->GetWorld()->GetTimerManager().SetTimer(
+						RestoreEnhancedAttackTimerHandle,
+						TimerDelegate,
+						5.0f,
+						false
+					);
 				}
 			}
 			else
@@ -55,17 +57,10 @@ void UWuKongGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* Acto
 
 void UWuKongGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
-	// 添加调用栈信息
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("EndAbility called from: %s"), *FString(__FUNCTION__)));
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("EnhancedAttackActivated?: %s"), bEnhancedAttackActivated ? TEXT("True") : TEXT("False")));
-	
-	// static int32 CallCount = 0;
-	// CallCount++;
-	// GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("EndAbility Call Count: %d"), CallCount));
-
 	// 检查能力系统组件是否有效
 	if (!ActorInfo || !ActorInfo->AbilitySystemComponent.IsValid())
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("AbilitySystemComponent not valid"));
 		return;
 	}
 
@@ -89,19 +84,17 @@ void UWuKongGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 
 	// 标记我们的增强状态为关闭
 	bEnhancedAttackActivated = false;
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("Enhanced Attack Status set to false"));
 
 	// 清理计时器
 	if (RestoreEnhancedAttackTimerHandle.IsValid() && ActorInfo->OwnerActor.IsValid())
 	{
 		ActorInfo->OwnerActor->GetWorld()->GetTimerManager().ClearTimer(RestoreEnhancedAttackTimerHandle);
+		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Timer cleared"));
 	}
 
-	// 直接使用能力系统组件来结束能力
-	ASC->CancelAbility(this);
-	
-	// 清理能力
-	ASC->ClearAbility(Handle);
-	//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Orange, FString::Printf(TEXT("Clear Ability Completed for Handle: %s"), *Handle.ToString()));
+	// 调用父类的 EndAbility，但不再调用 CancelAbility
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
 
