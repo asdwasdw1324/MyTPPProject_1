@@ -21,13 +21,24 @@ class ADashProjectile;
 class UWidgetComponent;
 class UDataAsset_InputConfig;
 class UDataAsset_StartUpDataBase;
+class UWuKongAttributeSet;
+class UWuKongAbilitySystemComponent;
 struct FInputActionValue;
 struct FGameplayAbilitySpecHandle;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogWuKongCharacter, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogWuKongAbility, Log, All);
 
-class UWuKongAttributeSet;
-class UWuKongAbilitySystemComponent;
+
+UENUM(BlueprintType)
+enum class EWuKongCharacterState : uint8
+{
+	Alive,
+	Dead,
+	Stunned,
+	// ... 其他状态
+};
 
 UCLASS(config=Game)
 class AMyTPPProjectCharacter : public ACharacter, public IAbilitySystemInterface
@@ -46,7 +57,7 @@ class AMyTPPProjectCharacter : public ACharacter, public IAbilitySystemInterface
 	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	//UInputMappingContext* DefaultMappingContext;
 
-	/** Jumping Input Action */
+	/** Internal Jumping Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* JumpAction;
 
@@ -120,13 +131,13 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
-	/*Called for Normal Attack, Implement in the Blueprint*/
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = Attack)
-	void NormalAttack();
-
-	/*C++ implementation for part of NormalAttack, completed implementation is in BluePrint*/
+	/*C++ implementation for NormalAttack*/
 	UFUNCTION(BlueprintCallable)
-	bool WuKongNormalAttack();
+	void WuKongNormalAttack();
+
+	/*Called for Normal Attack, Implement in the Blueprint*/
+	//UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = Attack)
+	//void NormalAttack();
 
 	/*Called for Charged Attack, Implement in the Blueprint*/
 	UFUNCTION(BlueprintImplementableEvent, Category = Attack)
@@ -175,7 +186,7 @@ protected:
 	virtual void PossessedBy(AController* NewController) override;
 	//~ End APawn Interface
 
-	FGameplayAbilitySpecHandle WuKongGameplayEnhancedAttackAbilitySpecHandle;
+	
 
 public:
 	/** Returns CameraBoom subObject **/
@@ -200,9 +211,9 @@ public:
 	//static single broadcast
 	void WuKongOnDeath();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = PlayerState)
-	bool IsDeath;
-	
+	UPROPERTY(BlueprintReadOnly, Category = "State")
+	EWuKongCharacterState CurrentState;
+
 	UFUNCTION(BlueprintCallable)
 	void PowerHeal();
 	
@@ -210,10 +221,6 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	void JudgePowerHealTimerHandleRunning();
-
-// private:
-// 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, meta=(AllowPrivateAccess = "true"))
-// 	UWidgetComponent* ChargingProgressWidget;
 	
 };
 

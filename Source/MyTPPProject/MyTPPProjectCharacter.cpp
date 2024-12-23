@@ -21,7 +21,6 @@
 #include "GamePlayTags/WuKongGamePlayTags.h"
 #include "AbilitySystem/WuKongAttributeSet.h"
 #include "AbilitySystem/WuKongAbilitySystemComponent.h"
-#include "AbilitySystem/Abilities/WuKongGameplayAbility.h"
 #include "DataAsset/DataAsset_StartUpDataBase.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -32,11 +31,15 @@ DEFINE_LOG_CATEGORY_STATIC(TPPCharacterLog, All, All);
 
 AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 {
-
 	PrimaryActorTick.bCanEverTick = false;
 	PrimaryActorTick.bStartWithTickEnabled = false;
+	// 优化网络更新
+	NetUpdateFrequency = 60.0f;
+	MinNetUpdateFrequency = 30.0f;
+	// 优化碰撞设置
+	GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
 
-	IsDeath = false;
+	CurrentState = EWuKongCharacterState::Alive;
 	
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -98,10 +101,7 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 	//Create AbilitySystem and AttributeSet component for the character
 	WuKongAbilitySystemComponent = CreateDefaultSubobject<UWuKongAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	WuKongAttributeSet = CreateDefaultSubobject<UWuKongAttributeSet>(TEXT("AttributeSet"));
-
-	//ChargingProgressWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("ChargingProgress"));
-	//ChargingProgressWidget->SetupAttachment(GetMesh());
-	//ChargingProgressWidget->SetWorldLocation(FVector(0.0f, 0.0f, 200.0f));
+	
 }
 
 UAbilitySystemComponent* AMyTPPProjectCharacter::GetAbilitySystemComponent() const
@@ -183,8 +183,7 @@ void AMyTPPProjectCharacter::WuKongOnDeath()
 			{
 				UE_LOG(LogTemp, Error, TEXT("Death animation failed to play."));
 			}
-			IsDeath = true;
-			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Black, FString::Printf(TEXT("IsDeath: %s"), IsDeath ? TEXT("true") : TEXT("false")));
+			CurrentState = EWuKongCharacterState::Dead;
 		}
 	}
 
@@ -204,7 +203,7 @@ void AMyTPPProjectCharacter::PostInitializeComponents()
 	
 }
 
-bool AMyTPPProjectCharacter::WuKongNormalAttack()
+void AMyTPPProjectCharacter::WuKongNormalAttack()
 {
 	if (!IsNormalAttack)
 	{
@@ -221,16 +220,14 @@ bool AMyTPPProjectCharacter::WuKongNormalAttack()
 				AnimInstance->OnMontageEnded.AddDynamic(this, &AMyTPPProjectCharacter::SetIsNormalAttack);
 				AnimInstance->Montage_Play(NorAttackMontage);
 				JudgePowerHealTimerHandleRunning();
+				TppPowerComponent->SetPower(TppPowerComponent->Power - 5.0f);
 			}
-			
-			return true;
 		}
 		else
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("PowerNotEnoughForNormalAttack!!!")));
 		}
 	}
-	return false;
 }
 
 void AMyTPPProjectCharacter::JudgePowerHealTimerHandleRunning()
@@ -308,8 +305,8 @@ void AMyTPPProjectCharacter::WuKongTeleport()
 			
 			TppPowerComponent->SetPower(currentpower - 50.0f);
 
-			bool IsPowerHealTimerHandleActive = GetWorldTimerManager().IsTimerActive(TppPowerComponent->PowerHealTimerHandle);
-			if (!IsPowerHealTimerHandleActive)
+			bool bIsPowerHealTimerHandleActive = GetWorldTimerManager().IsTimerActive(TppPowerComponent->PowerHealTimerHandle);
+			if (!bIsPowerHealTimerHandleActive)
 			{
 				GetWorldTimerManager().SetTimer(TppPowerComponent->PowerHealTimerHandle, this, &AMyTPPProjectCharacter::PowerHeal, 2.0f, true);
 			}
@@ -332,14 +329,9 @@ void AMyTPPProjectCharacter::PowerHeal()
 }
 
 
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
 // RegularInput
-
 void AMyTPPProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-
 	//Add Input Mapping Context (Enhanced input context system)
 	//Get the player controller
 	if (APlayerController* PlayerController = GetController<APlayerController>())
@@ -365,7 +357,7 @@ void AMyTPPProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 		WuKongEnhancedInputComponent->BindNativeInputAction(InputConfigDataAsset, WuKongGameplayTags::InputTag_Look, ETriggerEvent::Triggered, this, &AMyTPPProjectCharacter::Look);
 
 		//NormalAttack
-		WuKongEnhancedInputComponent->BindNativeInputAction(InputConfigDataAsset, WuKongGameplayTags::InputTag_NormalAttack, ETriggerEvent::Started, this, &AMyTPPProjectCharacter::NormalAttack);
+		WuKongEnhancedInputComponent->BindNativeInputAction(InputConfigDataAsset, WuKongGameplayTags::InputTag_NormalAttack, ETriggerEvent::Started, this, &AMyTPPProjectCharacter::WuKongNormalAttack);
 
 		//ChargedAttack
 		WuKongEnhancedInputComponent->BindNativeInputAction(InputConfigDataAsset, WuKongGameplayTags::InputTag_ChargedAttack, ETriggerEvent::Triggered, this, &AMyTPPProjectCharacter::ChargedAttack_Triggered);

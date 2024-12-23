@@ -93,8 +93,8 @@ void UWuKongGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Timer cleared"));
 	}
 
-	// 调用父类的 EndAbility，但不再调用 CancelAbility
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+
 }
 
 
