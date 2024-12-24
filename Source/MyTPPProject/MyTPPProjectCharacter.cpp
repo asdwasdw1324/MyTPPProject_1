@@ -24,6 +24,8 @@
 #include "DataAsset/DataAsset_StartUpDataBase.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
+DEFINE_LOG_CATEGORY(LogWuKongCharacter);
+DEFINE_LOG_CATEGORY(LogWuKongAbility);
 DEFINE_LOG_CATEGORY_STATIC(TPPCharacterLog, All, All);
 
 //////////////////////////////////////////////////////////////////////////
@@ -146,7 +148,7 @@ void AMyTPPProjectCharacter::OnHealthChangeFunc(AActor* InstigatorActor, UHealth
 		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("%s"), *GetNameSafe(OwningComp)));
 		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("Health: %f"), NewHealth)); 
 		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("DeltaHealth: %f"), Delta));
-		UE_LOG(TPPCharacterLog, Warning, TEXT("Health: %f, DeltaHealth: %f"), NewHealth, Delta);
+		UE_LOG(LogWuKongCharacter, Warning, TEXT("Health: %f, DeltaHealth: %f"), NewHealth, Delta);
 	}
 }
 
@@ -159,15 +161,23 @@ void AMyTPPProjectCharacter::OnPowerChangeFunc(AActor* InstigatorActor, UPowerCo
 		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("%s"), *GetNameSafe(OwningComp)));
 		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("Power: %f"), NewPower));
 		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("DeltaPower: %f"), Delta));
-		UE_LOG(TPPCharacterLog, Warning, TEXT("Power: %f, DeltaPower: %f"), NewPower, Delta);
+		UE_LOG(LogWuKongCharacter, Warning, TEXT("Power: %f, DeltaPower: %f"), NewPower, Delta);
 	}
 }
 
 //Death function
 void AMyTPPProjectCharacter::WuKongOnDeath()
 {
+	if (CurrentState == EWuKongCharacterState::Dead)
+	{
+		return;
+	}
+	CurrentState = EWuKongCharacterState::Dead;
+	OnCharacterStateChanged.Broadcast(CurrentState);
+
 	UE_LOG(TPPCharacterLog, Error, TEXT("Player %s is dead!"), *GetNameSafe(this));
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Black, FString::Printf(TEXT("Player %s is dead!"), *GetNameSafe(this)));
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("Player %s is dead!"), *GetNameSafe(this)));
+	
 
 	if (DeathAnim)
 	{
@@ -175,23 +185,17 @@ void AMyTPPProjectCharacter::WuKongOnDeath()
 		if (AnimInstance)
 		{
 			AnimInstance->Montage_Play(DeathAnim);
-			if (AnimInstance->Montage_IsPlaying(DeathAnim))
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Death animation is playing."));
-			}
-			else
-			{
-				UE_LOG(LogTemp, Error, TEXT("Death animation failed to play."));
-			}
-			CurrentState = EWuKongCharacterState::Dead;
 		}
 	}
 
 	GetCharacterMovement()->DisableMovement();
 	SetLifeSpan(5.0f);
- 
-	//NAME_Spectating
-	Controller->ChangeState(EName::Spectating);
+	
+	if (Controller)
+	{
+		Controller->ChangeState(EName::Spectating);//NAME_Spectating
+	}
+	
 }
 
 void AMyTPPProjectCharacter::PostInitializeComponents()

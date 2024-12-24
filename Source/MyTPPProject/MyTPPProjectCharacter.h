@@ -6,7 +6,6 @@
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "AbilitySystemInterface.h"
-#include "GameplayAbilitySpecHandle.h"
 #include "MyTPPProjectCharacter.generated.h"
 
 class USpringArmComponent;
@@ -116,9 +115,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AbilitySystem)
 	TObjectPtr<UWuKongAttributeSet> WuKongAttributeSet;
 
+	//Can NormalAttack
 	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Attack)
 	bool IsNormalAttack;
 
+	//Reset Can NormalAttack
 	UFUNCTION(BlueprintCallable, Category = Attack)
 	void SetIsNormalAttack(UAnimMontage* Montage, bool bInterrupted);
 
@@ -211,7 +212,7 @@ public:
 	//static single broadcast
 	void WuKongOnDeath();
 
-	UPROPERTY(BlueprintReadOnly, Category = "State")
+	UPROPERTY(BlueprintReadWrite, Category = "State")
 	EWuKongCharacterState CurrentState;
 
 	UFUNCTION(BlueprintCallable)
@@ -221,6 +222,12 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	void JudgePowerHealTimerHandleRunning();
+
+	// 添加委托
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterStateChanged, EWuKongCharacterState, NewState);
+
+	UPROPERTY(BlueprintAssignable, Category = "State")
+	FOnCharacterStateChanged OnCharacterStateChanged;
 	
 };
 

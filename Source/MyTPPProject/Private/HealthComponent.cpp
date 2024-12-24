@@ -20,6 +20,7 @@ UHealthComponent::UHealthComponent()
 
 	SetIsReplicatedByDefault(true);
 
+	// Bind delegates for taking any damage
 	// if (AActor* ComponentOwnerCharacter = GetOwner())
 	// {
 	// 	ComponentOwnerCharacter->OnTakeAnyDamage.AddDynamic(this, &UHealthComponent::OnTakeAnyDamageHandle);
@@ -44,16 +45,10 @@ bool UHealthComponent::ApplyHealthChange(const float Delta)
 	}
 
 	SetHealth(Health - Delta);
- 
-	if (ApplyGameEnd())
-	{
-		if (!bHasTriggeredDeath and OnDeath.IsBound())
-		{
-			OnDeath.Broadcast();
-			bHasTriggeredDeath = true;
-		}
-	}
-	else if (HealthStruct.FAutoHeal)
+
+	ApplyGameEnd();
+	
+	if (HealthStruct.FAutoHeal && Health < MaxHealth)
 	{
 		GetWorld()->GetTimerManager().SetTimer(ProjectileDamageHealTimerHandle, this, &UHealthComponent::HealUpdate, HealthStruct.FHealUpdateTime, true, HealthStruct.FHealDelay);
 	}
@@ -64,20 +59,29 @@ bool UHealthComponent::ApplyHealthChange(const float Delta)
 // Judge if the character health decrease to zero
 bool UHealthComponent::ApplyGameEnd()
 {
-	if (FMath::IsNearlyZero(Health))
+	if (FMath::IsNearlyZero(Health) &&OnDeath.IsBound())
 	{
-		//GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Red, FString::Printf(TEXT("You have died, Game Over!!!")));
-		//UE_LOG(HealthCompLog, Error, TEXT("You have died, Game Over!!!"));
-		
-		GetWorld()->GetTimerManager().ClearTimer(HealTimerHandle);
-		GetWorld()->GetTimerManager().ClearTimer(ProjectileDamageHealTimerHandle);
-		return true;
+		UE_LOG(HealthCompLog, Warning, TEXT("Health is zero, triggering death"));
+		bHasTriggeredDeath = true;
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("HasTriggeredDeath: %s"), bHasTriggeredDeath ? TEXT("True") : TEXT("False")));
 
+		if (GetWorld())
+		{
+			if (HealTimerHandle.IsValid())
+			{
+				GetWorld()->GetTimerManager().ClearTimer(HealTimerHandle);
+			}
+			if (ProjectileDamageHealTimerHandle.IsValid())
+			{
+				GetWorld()->GetTimerManager().ClearTimer(ProjectileDamageHealTimerHandle);
+			}
+		}
+		UE_LOG(HealthCompLog, Warning, TEXT("Broadcasting death event"));
+		OnDeath.Broadcast();
+		UE_LOG(HealthCompLog, Warning, TEXT("Death event broadcast"));
+		return true;
 	}
-	else
-	{
-		return false;
-	}
+	return false;
 }
 
 // Apply damage by radius area

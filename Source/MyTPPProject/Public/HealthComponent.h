@@ -74,16 +74,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Health")
 	bool bHasTriggeredDeath;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Health")
+	FTimerHandle HealTimerHandle;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Health")
+	FTimerHandle ProjectileDamageHealTimerHandle;
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
 private:
-	//Heal function TimerHandle
-	FTimerHandle HealTimerHandle;
-
-	FTimerHandle ProjectileDamageHealTimerHandle;
-
+	
 	void HealUpdate();
 
 
