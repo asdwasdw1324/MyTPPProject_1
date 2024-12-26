@@ -48,7 +48,7 @@ void UPowerComponent::PowerHealUpdate()
 
 	if (UWorld* World = GetWorld())
 	{
-		if ((FMath::IsNearlyEqual(Power, MaxPower)) || (FMath::IsNearlyZero(PlayerWuKongHealth)))
+		if (FMath::IsNearlyEqual(Power, MaxPower) || FMath::IsNearlyZero(PlayerWuKongHealth))
 		{
 			World->GetTimerManager().ClearTimer(PowerHealTimerHandle);
 		}

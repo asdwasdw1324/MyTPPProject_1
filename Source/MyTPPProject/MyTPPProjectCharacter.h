@@ -46,11 +46,11 @@ class AMyTPPProjectCharacter : public ACharacter, public IAbilitySystemInterface
 
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	USpringArmComponent* CameraBoom;
+	TObjectPtr<USpringArmComponent> CameraBoom;
 
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* FollowCamera;
+	TObjectPtr<UCameraComponent> FollowCamera;
 	
 	/** MappingContext */
 	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -58,7 +58,7 @@ class AMyTPPProjectCharacter : public ACharacter, public IAbilitySystemInterface
 
 	/** Internal Jumping Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* JumpAction;
+	TObjectPtr<UInputAction> JumpAction;
 
 	/** Move Input Action */
 	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -85,13 +85,17 @@ class AMyTPPProjectCharacter : public ACharacter, public IAbilitySystemInterface
 	//UInputAction* ChargedAttack;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UDataAsset_InputConfig* InputConfigDataAsset;
+	TObjectPtr<UDataAsset_InputConfig> InputConfigDataAsset;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = CharacterData, meta = (AllowPrivateAccess = "true"))
 	TSoftObjectPtr<UDataAsset_StartUpDataBase> CharacterStartUpData;
 
+
 public:
 	AMyTPPProjectCharacter();
+
+	UPROPERTY(BlueprintReadWrite, Category = State)
+	EWuKongCharacterState CurrentState;
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	
@@ -187,8 +191,6 @@ protected:
 	virtual void PossessedBy(AController* NewController) override;
 	//~ End APawn Interface
 
-	
-
 public:
 	/** Returns CameraBoom subObject **/
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -202,7 +204,7 @@ public:
 	FORCEINLINE UHealthComponent* GetTppHealthComponent() const { return TppHealthComponent; }
 	/** Returns PowerComponent subObject **/
 	FORCEINLINE UPowerComponent* GetTppPowerComponent() const { return TppPowerComponent; }
-
+	
 	UFUNCTION()
 	void OnHealthChangeFunc(AActor* InstigatorActor, UHealthComponent* OwningComp, float NewHealth, float Delta);
 
@@ -212,14 +214,17 @@ public:
 	//static single broadcast
 	void WuKongOnDeath();
 
-	UPROPERTY(BlueprintReadWrite, Category = "State")
-	EWuKongCharacterState CurrentState;
+	UFUNCTION()
+	void WuKongOnStateChanged(EWuKongCharacterState NewState);
 
+	//Automatic Power Heal function
 	UFUNCTION(BlueprintCallable)
 	void PowerHeal();
-	
+
+	//To bind the function to the delegation
 	virtual void PostInitializeComponents() override;
-	
+
+	//Judge the PowerHealTimerHandle is running
 	UFUNCTION(BlueprintCallable)
 	void JudgePowerHealTimerHandleRunning();
 

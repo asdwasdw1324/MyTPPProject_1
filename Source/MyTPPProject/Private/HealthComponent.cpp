@@ -2,10 +2,8 @@
 
 
 #include "HealthComponent.h"
-
 #include "Engine/World.h"
 #include "TimerManager.h"
-#include "MyTPPProject/MyTPPProjectCharacter.h"
 
 DEFINE_LOG_CATEGORY_STATIC(HealthCompLog, All, All)
 
@@ -20,7 +18,6 @@ UHealthComponent::UHealthComponent()
 
 	SetIsReplicatedByDefault(true);
 
-	// Bind delegates for taking any damage
 	// if (AActor* ComponentOwnerCharacter = GetOwner())
 	// {
 	// 	ComponentOwnerCharacter->OnTakeAnyDamage.AddDynamic(this, &UHealthComponent::OnTakeAnyDamageHandle);
@@ -45,10 +42,15 @@ bool UHealthComponent::ApplyHealthChange(const float Delta)
 	}
 
 	SetHealth(Health - Delta);
-
-	ApplyGameEnd();
 	
-	if (HealthStruct.FAutoHeal && Health < MaxHealth)
+	if (ApplyGameEnd() && bHasTriggeredDeath)
+	{
+		if (OnDeath.IsBound())
+		{
+			OnDeath.Broadcast();
+		}
+	}
+	else if (HealthStruct.FAutoHeal)
 	{
 		GetWorld()->GetTimerManager().SetTimer(ProjectileDamageHealTimerHandle, this, &UHealthComponent::HealUpdate, HealthStruct.FHealUpdateTime, true, HealthStruct.FHealDelay);
 	}
@@ -59,56 +61,27 @@ bool UHealthComponent::ApplyHealthChange(const float Delta)
 // Judge if the character health decrease to zero
 bool UHealthComponent::ApplyGameEnd()
 {
-	if (FMath::IsNearlyZero(Health) &&OnDeath.IsBound())
+	if (FMath::IsNearlyZero(Health))
 	{
-		UE_LOG(HealthCompLog, Warning, TEXT("Health is zero, triggering death"));
-		bHasTriggeredDeath = true;
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("HasTriggeredDeath: %s"), bHasTriggeredDeath ? TEXT("True") : TEXT("False")));
-
-		if (GetWorld())
+		// 确保在世界有效的情况下清理计时器
+		if (UWorld* World = GetWorld())
 		{
-			if (HealTimerHandle.IsValid())
-			{
-				GetWorld()->GetTimerManager().ClearTimer(HealTimerHandle);
-			}
+			FTimerManager& TimerManager = World->GetTimerManager();
+			
+			// 清理所有相关计时器
 			if (ProjectileDamageHealTimerHandle.IsValid())
 			{
-				GetWorld()->GetTimerManager().ClearTimer(ProjectileDamageHealTimerHandle);
+				TimerManager.ClearTimer(ProjectileDamageHealTimerHandle);
 			}
 		}
-		UE_LOG(HealthCompLog, Warning, TEXT("Broadcasting death event"));
-		OnDeath.Broadcast();
-		UE_LOG(HealthCompLog, Warning, TEXT("Death event broadcast"));
+
+		// 设置死亡标记
+		bHasTriggeredDeath = true;
+		
 		return true;
 	}
 	return false;
 }
-
-// Apply damage by radius area
-// bool UHealthComponent::OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
-// {
-// 	if (Damage <= 0 || !GetWorld() || bHasTriggeredDeath)
-// 	{
-// 		return false;
-// 	}
-//
-// 	SetHealth(Health - Damage);
-//
-// 	if (ApplyGameEnd())
-// 	{
-// 		if (!bHasTriggeredDeath)
-// 		{
-// 			OnDeath.Broadcast();
-// 			bHasTriggeredDeath = true;
-// 		}
-// 	}
-// 	else if (HealthStruct.FAutoHeal)
-// 	{
-// 		GetWorld()->GetTimerManager().SetTimer(ProjectileDamageHealTimerHandle, this, &UHealthComponent::HealUpdate, HealthStruct.FHealUpdateTime, true, HealthStruct.FHealDelay);
-// 	}
-// 	
-// 	return true;
-// }
 
 //Health recover automatically
 void UHealthComponent::HealUpdate()
@@ -138,5 +111,30 @@ void UHealthComponent::SetHealth(float NewHealth)
 	//OnDamageTaking.Broadcast(Health);
 	OnHealthChanged.Broadcast(GetOwner(), this, Health, DeltaHealth);
 	
-	
 }
+
+// Apply damage by radius area
+// bool UHealthComponent::OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+// {
+// 	if (Damage <= 0 || !GetWorld() || bHasTriggeredDeath)
+// 	{
+// 		return false;
+// 	}
+//
+// 	SetHealth(Health - Damage);
+//
+// 	if (ApplyGameEnd())
+// 	{
+// 		if (!bHasTriggeredDeath)
+// 		{
+// 			OnDeath.Broadcast();
+// 			bHasTriggeredDeath = true;
+// 		}
+// 	}
+// 	else if (HealthStruct.FAutoHeal)
+// 	{
+// 		GetWorld()->GetTimerManager().SetTimer(ProjectileDamageHealTimerHandle, this, &UHealthComponent::HealUpdate, HealthStruct.FHealUpdateTime, true, HealthStruct.FHealDelay);
+// 	}
+// 	
+// 	return true;
+// }

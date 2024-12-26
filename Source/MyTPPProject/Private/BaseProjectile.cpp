@@ -9,6 +9,7 @@
 #include "Sound/SoundCue.h"
 #include "Kismet/GameplayStatics.h"
 #include "HealthComponent.h"
+#include "MyTPPProject/MyTPPProjectCharacter.h"
 
 
 // Sets default values
@@ -74,29 +75,34 @@ void ABaseProjectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* Othe
 		if (OtherActor != this && OtherComp->IsSimulatingPhysics())
 		{
 			OtherComp->AddImpulseAtLocation(MoveComp->Velocity * 100.0f, Hit.ImpactPoint);
+			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Hit other actor!"));
 		}
 		if (OtherActor != GetInstigator())
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Instigator is not same with attacked one!"));
-			//UE_LOG(LogTemp, Warning, TEXT("Instigator is not same with attacked one!"));
 		}
 	}
 }
 
 //BeginOverlap function when ProjectileBase hit on any other actors
-void ABaseProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent*
-	OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ABaseProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	Explode();
-
-	if (OtherActor && OtherActor != this)
+	if (const AMyTPPProjectCharacter* HitCharacter = Cast<AMyTPPProjectCharacter>(OtherActor))
 	{
-		UHealthComponent* HealthComp = Cast<UHealthComponent>(OtherActor->GetComponentByClass(UHealthComponent::StaticClass()));
-		if (HealthComp)
+		if (HitCharacter->CurrentState == EWuKongCharacterState::Dead)
 		{
-			HealthComp->ApplyHealthChange(30.0f);
-			//UE_LOG(LogTemp, Warning, TEXT("Take Damage by BaseProjectile!!!"));
-			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("Take Damage by BaseProjectile!!!"));
+			return;
+		}
+		
+		Explode();
+
+		if (OtherActor && OtherActor != this)
+		{
+			if (UHealthComponent* HealthComp = Cast<UHealthComponent>(OtherActor->GetComponentByClass(UHealthComponent::StaticClass())))
+			{
+				HealthComp->ApplyHealthChange(40.0f);
+				GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Purple, TEXT("Take Damage by BaseProjectile!!!Actor Overlapped!!!"));
+			}
 		}
 	}
 }

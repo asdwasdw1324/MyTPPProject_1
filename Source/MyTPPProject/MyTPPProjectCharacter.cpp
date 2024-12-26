@@ -116,7 +116,6 @@ void AMyTPPProjectCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 	
-	
 }
 
 void AMyTPPProjectCharacter::PossessedBy(AController* NewController)
@@ -177,7 +176,6 @@ void AMyTPPProjectCharacter::WuKongOnDeath()
 
 	UE_LOG(TPPCharacterLog, Error, TEXT("Player %s is dead!"), *GetNameSafe(this));
 	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("Player %s is dead!"), *GetNameSafe(this)));
-	
 
 	if (DeathAnim)
 	{
@@ -188,23 +186,47 @@ void AMyTPPProjectCharacter::WuKongOnDeath()
 		}
 	}
 
+	// 1. 禁用移动
 	GetCharacterMovement()->DisableMovement();
+	
+	// 2. 设置生命周期
 	SetLifeSpan(5.0f);
-	
-	if (Controller)
+
+	// 3. 获取玩家控制器并显示鼠标
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
 	{
-		Controller->ChangeState(EName::Spectating);//NAME_Spectating
+		// 显示鼠标光标
+		PC->bShowMouseCursor = true;
+		
+		// 设置输入模式为 UI Only
+		FInputModeUIOnly InputMode;
+		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+		PC->SetInputMode(InputMode);
+		
+		// 禁用输入
+		DisableInput(PC);
 	}
-	
+}
+
+void AMyTPPProjectCharacter::WuKongOnStateChanged(EWuKongCharacterState NewState)
+{
+	if (NewState == EWuKongCharacterState::Dead)
+	{
+		//切换到观察者模式（如果需要）
+		// if (Controller)
+		// {
+		//      Controller->ChangeState(NAME_Spectating);
+		// }
+	}
 }
 
 void AMyTPPProjectCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	GetTppHealthComponent()->OnHealthChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnHealthChangeFunc);
-	GetTppHealthComponent()->OnDeath.AddUObject(this, &AMyTPPProjectCharacter::WuKongOnDeath);
-	GetTppPowerComponent()->OnPowerChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnPowerChangeFunc);
-	
+	TppHealthComponent->OnHealthChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnHealthChangeFunc);
+	TppHealthComponent->OnDeath.AddUObject(this, &AMyTPPProjectCharacter::WuKongOnDeath);
+	TppPowerComponent->OnPowerChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnPowerChangeFunc);
+	OnCharacterStateChanged.AddDynamic(this, &AMyTPPProjectCharacter::WuKongOnStateChanged);
 }
 
 void AMyTPPProjectCharacter::WuKongNormalAttack()
@@ -329,7 +351,11 @@ void AMyTPPProjectCharacter::WuKongTeleport()
 //Heal power after attacking/teleport(doing anything consume power)
 void AMyTPPProjectCharacter::PowerHeal()
 {
-	TppPowerComponent->PowerHealUpdate();
+	if (TppPowerComponent)
+	{
+		TppPowerComponent->PowerHealUpdate();
+	}
+	
 }
 
 
