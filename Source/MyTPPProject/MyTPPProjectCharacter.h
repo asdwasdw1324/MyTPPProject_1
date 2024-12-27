@@ -22,6 +22,7 @@ class UDataAsset_InputConfig;
 class UDataAsset_StartUpDataBase;
 class UWuKongAttributeSet;
 class UWuKongAbilitySystemComponent;
+class UUserWidget;
 struct FInputActionValue;
 struct FGameplayAbilitySpecHandle;
 
@@ -191,6 +192,9 @@ protected:
 	virtual void PossessedBy(AController* NewController) override;
 	//~ End APawn Interface
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Game)
+	TSubclassOf<UUserWidget> WuKongDeathUI;
+
 public:
 	/** Returns CameraBoom subObject **/
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -231,8 +235,14 @@ public:
 	// 添加委托
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterStateChanged, EWuKongCharacterState, NewState);
 
-	UPROPERTY(BlueprintAssignable, Category = "State")
+	UPROPERTY(BlueprintAssignable, Category = State)
 	FOnCharacterStateChanged OnCharacterStateChanged;
+	
+	UFUNCTION(BlueprintCallable, Category = Game)
+	void RestartGameAfterDeath();
+	
+	UFUNCTION(Category = UI)
+	void ShowDeathUI();
 	
 };
 

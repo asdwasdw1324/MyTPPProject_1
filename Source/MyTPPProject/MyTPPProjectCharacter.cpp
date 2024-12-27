@@ -22,6 +22,8 @@
 #include "AbilitySystem/WuKongAttributeSet.h"
 #include "AbilitySystem/WuKongAbilitySystemComponent.h"
 #include "DataAsset/DataAsset_StartUpDataBase.h"
+#include "Blueprint\UserWidget.h"
+#include "InputMappingContext.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 DEFINE_LOG_CATEGORY(LogWuKongCharacter);
@@ -174,49 +176,56 @@ void AMyTPPProjectCharacter::WuKongOnDeath()
 	CurrentState = EWuKongCharacterState::Dead;
 	OnCharacterStateChanged.Broadcast(CurrentState);
 
-	UE_LOG(TPPCharacterLog, Error, TEXT("Player %s is dead!"), *GetNameSafe(this));
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("Player %s is dead!"), *GetNameSafe(this)));
+	UE_LOG(TPPCharacterLog, Warning, TEXT("Player %s is dead!"), *GetNameSafe(this));
 
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (DeathAnim)
 	{
-		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		float AnimLength = DeathAnim->GetPlayLength();
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("Death anim length: %f"), AnimLength));
+		
 		if (AnimInstance)
 		{
+			USkeletalMesh* CharacterMesh = GetMesh()->GetSkeletalMeshAsset();
+			if (CharacterMesh && DeathAnim->GetSkeleton() != CharacterMesh->GetSkeleton())
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("Death animation skeleton mismatch!"));
+				return;
+			}
+
 			AnimInstance->Montage_Play(DeathAnim);
 		}
 	}
 
-	// 1. 禁用移动
+	GetCharacterMovement()->StopMovementImmediately();
 	GetCharacterMovement()->DisableMovement();
+	SetLifeSpan(3.0f);
 	
-	// 2. 设置生命周期
-	SetLifeSpan(5.0f);
-
-	// 3. 获取玩家控制器并显示鼠标
-	if (APlayerController* PC = Cast<APlayerController>(GetController()))
-	{
-		// 显示鼠标光标
-		PC->bShowMouseCursor = true;
-		
-		// 设置输入模式为 UI Only
-		FInputModeUIOnly InputMode;
-		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-		PC->SetInputMode(InputMode);
-		
-		// 禁用输入
-		DisableInput(PC);
-	}
 }
 
 void AMyTPPProjectCharacter::WuKongOnStateChanged(EWuKongCharacterState NewState)
 {
 	if (NewState == EWuKongCharacterState::Dead)
 	{
+		if (APlayerController* PC = Cast<APlayerController>(GetController()))
+		{
+			if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
+			{
+				Subsystem->ClearAllMappings();
+			}
+		
+			FInputModeUIOnly InputMode;
+			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+			PC->SetInputMode(InputMode);
+			ShowDeathUI();
+			PC->bShowMouseCursor = true;
+		}
 		//切换到观察者模式（如果需要）
 		// if (Controller)
 		// {
 		//      Controller->ChangeState(NAME_Spectating);
 		// }
+		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Orange, FString::Printf(TEXT("Please select an option to continue!!!")));
 	}
 }
 
@@ -458,4 +467,37 @@ void AMyTPPProjectCharacter::Look(const FInputActionValue& Value)
 
 //////////////////////////////////////////////////////////////////////////
 // RegularInput
+
+void AMyTPPProjectCharacter::RestartGameAfterDeath()
+{
+	CurrentState = EWuKongCharacterState::Alive;
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		PC->RestartLevel();
+		PC->bShowMouseCursor = false;
+		FInputModeGameOnly InputMode;
+		InputMode.SetConsumeCaptureMouseDown(true);
+		PC->SetInputMode(InputMode);
+		// UGameplayStatics::OpenLevel(this, FName(*UGameplayStatics::GetCurrentLevelName(this)));
+	}
+}
+
+void AMyTPPProjectCharacter::ShowDeathUI()
+{
+	if (WuKongDeathUI)
+	{
+		if (APlayerController* PC = Cast<APlayerController>(GetController()))
+		{
+			UUserWidget* DeathWidget = CreateWidget<UUserWidget>(PC, WuKongDeathUI);
+			if (DeathWidget)
+			{
+				DeathWidget->AddToViewport();
+			}
+		}
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("DeathUI is not set!"));
+	}
+}
 

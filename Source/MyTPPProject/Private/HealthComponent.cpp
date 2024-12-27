@@ -99,17 +99,20 @@ void UHealthComponent::SetHealth(float NewHealth)
 {
 	float ClampedHealth = FMath::Clamp(NewHealth, 0.0f, MaxHealth);
 
-	if (FMath::IsNearlyEqual(ClampedHealth,Health) && ClampedHealth != MaxHealth)
+	if (FMath::IsNearlyEqual(ClampedHealth,Health))
 	{
 		return;
 	}
 	
 	float LastHealth = GetHealth();
 	Health = ClampedHealth;
-	float DeltaHealth = LastHealth - Health;
+	float DeltaHealth = ClampedHealth - LastHealth;
 
 	//OnDamageTaking.Broadcast(Health);
-	OnHealthChanged.Broadcast(GetOwner(), this, Health, DeltaHealth);
+	if (DeltaHealth != 0.f)
+	{
+		OnHealthChanged.Broadcast(GetOwner(), this, Health, DeltaHealth);
+	}
 	
 }
 

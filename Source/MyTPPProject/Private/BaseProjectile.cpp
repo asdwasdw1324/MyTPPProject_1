@@ -100,7 +100,7 @@ void ABaseProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, A
 		{
 			if (UHealthComponent* HealthComp = Cast<UHealthComponent>(OtherActor->GetComponentByClass(UHealthComponent::StaticClass())))
 			{
-				HealthComp->ApplyHealthChange(40.0f);
+				HealthComp->ApplyHealthChange(50.0f);
 				GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Purple, TEXT("Take Damage by BaseProjectile!!!Actor Overlapped!!!"));
 			}
 		}
