@@ -85,27 +85,26 @@ void ABaseProjectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* Othe
 }
 
 //BeginOverlap function when ProjectileBase hit on any other actors
-void ABaseProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (const AMyTPPProjectCharacter* HitCharacter = Cast<AMyTPPProjectCharacter>(OtherActor))
-	{
-		if (HitCharacter->CurrentState == EWuKongCharacterState::Dead)
-		{
-			return;
-		}
-		
-		Explode();
-
-		if (OtherActor && OtherActor != this)
-		{
-			if (UHealthComponent* HealthComp = Cast<UHealthComponent>(OtherActor->GetComponentByClass(UHealthComponent::StaticClass())))
-			{
-				HealthComp->ApplyHealthChange(50.0f);
-				GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Purple, TEXT("Take Damage by BaseProjectile!!!Actor Overlapped!!!"));
-			}
-		}
-	}
-}
+ void ABaseProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+ {
+ 	if (const AMyTPPProjectCharacter* HitCharacter = Cast<AMyTPPProjectCharacter>(OtherActor))
+ 	{
+ 		if (HitCharacter->CurrentState == EWuKongCharacterState::Dead)
+ 		{
+ 			return;
+ 		}
+ 		
+ 		Explode();
+ 		if (OtherActor && OtherActor != this)
+ 		{
+ 			if (UHealthComponent* HealthComp = Cast<UHealthComponent>(OtherActor->GetComponentByClass(UHealthComponent::StaticClass())))
+ 			{
+ 				HealthComp->ApplyHealthChange(50.0f);
+ 				GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Purple, TEXT("Take Damage by BaseProjectile!!!Actor Overlapped!!!"));
+ 			}
+ 		}
+ 	}
+ }
 
 //Explode implementation in C++
 void ABaseProjectile::Explode_Implementation()

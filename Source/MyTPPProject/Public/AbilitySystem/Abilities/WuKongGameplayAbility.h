@@ -6,6 +6,9 @@
 #include "Abilities/GameplayAbility.h"
 #include "WuKongGameplayAbility.generated.h"
 
+class UPawnCombatComponent;
+
+
 UENUM(BlueprintType)
 enum class EWuKongAbilityActivationPolicy : uint8
 {
@@ -27,11 +30,16 @@ protected:
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
 	static bool bIsEndingAbility;
+	
 	bool bEnhancedAttackActivated = false;
+	
 	FTimerHandle RestoreEnhancedAttackTimerHandle;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "WuKongAbility")
 	EWuKongAbilityActivationPolicy AbilityActivationPolicy = EWuKongAbilityActivationPolicy::OnTriggered;
+
+	UFUNCTION(BlueprintPure, Category = "WuKongAbility")
+	UPawnCombatComponent* GetPawnCombatComponentFromActorInfo() const;
 	
 	
 };

@@ -23,6 +23,7 @@ class UDataAsset_StartUpDataBase;
 class UWuKongAttributeSet;
 class UWuKongAbilitySystemComponent;
 class UUserWidget;
+class UWuKongCombatComponent;
 struct FInputActionValue;
 struct FGameplayAbilitySpecHandle;
 
@@ -119,6 +120,10 @@ public:
 	//AttributeSetComponent
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AbilitySystem)
 	TObjectPtr<UWuKongAttributeSet> WuKongAttributeSet;
+
+	//WuKongCombatComponent
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = CombatSystem)
+	TObjectPtr<UWuKongCombatComponent> WuKongCombatComponent;
 
 	//Can NormalAttack
 	UPROPERTY(EditDefaultsOnly, BlueprintReadwrite, Category = Attack)

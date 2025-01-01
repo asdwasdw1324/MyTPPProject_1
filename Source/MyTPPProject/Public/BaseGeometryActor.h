@@ -5,23 +5,12 @@
 #include "CoreMinimal.h"
 #include "WuKongInterface_Prop.h"
 #include "GameFramework/Actor.h"
-#include "WuKongInterface_Prop.h"
 #include "BaseGeometryActor.generated.h"
 
 class UStaticMeshComponent;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnTimerFinished, AActor*);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnColorChanged, const FLinearColor&, Color, const FString&, Name);
-
-// UENUM(BlueprintType)
-// enum class EMyEnumStatus : uint8
-// {
-// 	Run,
-// 	Walk,
-// 	Idle,
-// 	Jump
-// };
-
 
 //Enumeration of Movement Type
 UENUM(BlueprintType)
@@ -36,9 +25,9 @@ enum class EMovementType : uint8
 UENUM(BlueprintType)
 enum class EGeometryType : uint8
 {
-	GeoOption1 UMETA(DisplayName = "Opt1"),
-	GeoOption2 UMETA(DisplayName = "Opt2"),
-	GeoOption3 UMETA(DisplayName = "Opt3")
+	GeoOption1 UMETA(DisplayName = "GeoOpt1"),
+	GeoOption2 UMETA(DisplayName = "GeoOpt2"),
+	GeoOption3 UMETA(DisplayName = "GeoOpt3")
 };
 
 //Another declaration of enumeration
@@ -89,22 +78,15 @@ public:
 	ABaseGeometryActor();
 
 	//Define a GeometryData struct
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|GeoData")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|GeoData")
 	FGeometryData GeometryData;
 
 	//Get and Set GeometryData
 	UFUNCTION(BlueprintCallable)
-	void SetGeometryData(const FGeometryData& Data)
-	{
-		GeometryData = Data;
-	}
+	FORCEINLINE void SetGeometryData(const FGeometryData& Data) { GeometryData = Data;}
 
 	UFUNCTION(BlueprintCallable)
-	FGeometryData GetGeometryData() const
-	{
-		return GeometryData;
-	}
-	//Get and Set GeometryData
+	FORCEINLINE FGeometryData GetGeometryData() const {return GeometryData;}
 
 	//Delegate instance for ending to change color
 	FOnTimerFinished OnTimerFinished;
@@ -117,10 +99,10 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Mesh")
 	UStaticMeshComponent* BaseMesh;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void MoveLogic();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category  = "Movement|GeoData")
 	void SetColor(const FLinearColor& Color);
 	
 protected:
@@ -151,14 +133,14 @@ public:
 	void ColorChangeFunc(const FLinearColor& Color, const FString& Name);
 
 	void TimerFinishedFunc(AActor* FinishedGeoActor);
-	//Delegate Test function
 	
 	//Implementation function to heal character
 	virtual void HealInteract_Implementation(APawn* InstigatorPawn) override;
 
-	TEnumAsByte<EMyEnumeration::EnumType>MyEnum;
 
-	//EMyEnumStatus EnumStat;
+
+	TEnumAsByte<EMyEnumeration::EnumType>MyEnum;
+	
 
 	
 };

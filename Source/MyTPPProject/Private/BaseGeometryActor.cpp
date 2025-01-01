@@ -22,7 +22,7 @@ ABaseGeometryActor::ABaseGeometryActor()
 	SetRootComponent(BaseMesh);
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh>BaseStaticMesh(TEXT("/Script/Engine.StaticMesh'/Game/StarterContent/Shapes/Shape_NarrowCapsule.Shape_NarrowCapsule'"));
-    if (ensure(BaseStaticMesh.Succeeded()))
+    if (BaseStaticMesh.Succeeded())
     {
 	    BaseMesh->SetStaticMesh(BaseStaticMesh.Object);
     }
@@ -35,8 +35,6 @@ ABaseGeometryActor::ABaseGeometryActor()
  //    }
 	
 	MyEnum = EMyEnumeration::Type1;
-
-	//EnumStat = EMyEnumStatus::Idle;
 	
 }
 
@@ -89,6 +87,7 @@ void ABaseGeometryActor::MoveLogic()
 				SetActorLocation(CurrentLocation);
 			}
 		}
+		break;
 
 	case EMovementType::Static:
 		break;
@@ -137,17 +136,15 @@ void ABaseGeometryActor::PostInitializeComponents()
 //Delegate Test
 void ABaseGeometryActor::ColorChangeFunc(const FLinearColor& Color, const FString& Name)
 {
-	//UE_LOG(LogBaseGeometry, Warning, TEXT("Color set up to: %s"), *Color.ToString());
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::White, (TEXT("Color set up to: %s"), *Color.ToString()));
+	UE_LOG(LogBaseGeometry, Warning, TEXT("Color set up to: %s"), *Color.ToString());
+	//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::White, (TEXT("Color set up to: %s"), *Color.ToString()));
 }
 
 void ABaseGeometryActor::TimerFinishedFunc(AActor* FinishedGeoActor)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, (TEXT("%s: Stop to change color!"), *GetNameSafe(FinishedGeoActor)));
-	//UE_LOG(LogBaseGeometry, Error, TEXT("%s: Stop to change color!"), *GetNameSafe(FinishedGeoActor));
+	//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, (TEXT("%s: Stop to change color!"), *GetNameSafe(FinishedGeoActor)));
+	UE_LOG(LogBaseGeometry, Error, TEXT("%s: Stop to change color!"), *GetNameSafe(FinishedGeoActor));
 }
-//Delegate Test
-
 
 void ABaseGeometryActor::HealInteract_Implementation(APawn* InstigatorPawn)
 {

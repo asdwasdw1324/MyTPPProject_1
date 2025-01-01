@@ -24,6 +24,7 @@
 #include "DataAsset/DataAsset_StartUpDataBase.h"
 #include "Blueprint\UserWidget.h"
 #include "InputMappingContext.h"
+#include "Component/WuKongCombatComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 DEFINE_LOG_CATEGORY(LogWuKongCharacter);
@@ -105,7 +106,9 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 	//Create AbilitySystem and AttributeSet component for the character
 	WuKongAbilitySystemComponent = CreateDefaultSubobject<UWuKongAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	WuKongAttributeSet = CreateDefaultSubobject<UWuKongAttributeSet>(TEXT("AttributeSet"));
-	
+
+	//Create Combat component for the character
+	WuKongCombatComponent = CreateDefaultSubobject<UWuKongCombatComponent>(TEXT("CombatComp"));
 }
 
 UAbilitySystemComponent* AMyTPPProjectCharacter::GetAbilitySystemComponent() const
@@ -176,13 +179,13 @@ void AMyTPPProjectCharacter::WuKongOnDeath()
 	CurrentState = EWuKongCharacterState::Dead;
 	OnCharacterStateChanged.Broadcast(CurrentState);
 
-	UE_LOG(TPPCharacterLog, Warning, TEXT("Player %s is dead!"), *GetNameSafe(this));
+	UE_LOG(TPPCharacterLog, Error, TEXT("Player %s is dead!"), *GetNameSafe(this));
 
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (DeathAnim)
 	{
 		float AnimLength = DeathAnim->GetPlayLength();
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("Death anim length: %f"), AnimLength));
+		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("Death anim length: %f"), AnimLength));
 		
 		if (AnimInstance)
 		{
@@ -219,13 +222,19 @@ void AMyTPPProjectCharacter::WuKongOnStateChanged(EWuKongCharacterState NewState
 			PC->SetInputMode(InputMode);
 			ShowDeathUI();
 			PC->bShowMouseCursor = true;
+
+			GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Orange, FString::Printf(TEXT("Please select an option to continue!!!")));
+
+			//切换到观察者模式（如果需要）
+			// if (Controller)
+			// {
+			//      Controller->ChangeState(NAME_Spectating);
+			// }
 		}
-		//切换到观察者模式（如果需要）
-		// if (Controller)
-		// {
-		//      Controller->ChangeState(NAME_Spectating);
-		// }
-		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Orange, FString::Printf(TEXT("Please select an option to continue!!!")));
+	}
+	if (NewState == EWuKongCharacterState::Alive)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString::Printf(TEXT("Player %s has come back! Game restart!"), *GetNameSafe(this)));
 	}
 }
 
@@ -462,15 +471,13 @@ void AMyTPPProjectCharacter::Look(const FInputActionValue& Value)
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
-
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
 // RegularInput
 
 void AMyTPPProjectCharacter::RestartGameAfterDeath()
 {
 	CurrentState = EWuKongCharacterState::Alive;
+	OnCharacterStateChanged.Broadcast(CurrentState);
+
 	if (APlayerController* PC = Cast<APlayerController>(GetController()))
 	{
 		PC->RestartLevel();
