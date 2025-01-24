@@ -12,6 +12,8 @@ namespace WuKongGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Teleport, "InputTag.Teleport")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Interact, "InputTag.Interact")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_EnhancedAttack, "InputTag.EnhancedAttack")
-
-	UE_DEFINE_GAMEPLAY_TAG(PlayTag_Weapon, "PlayTag.Weapon")
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_DisEnhancedAttack, "InputTag.DisEnhancedAttack")
+	
+	UE_DEFINE_GAMEPLAY_TAG(PlayTag_Weapon_EnhancedEffector, "PlayTag.Weapon.EnhancedEffector")
+	
 }

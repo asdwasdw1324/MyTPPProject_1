@@ -7,6 +7,7 @@
 #include "WuKongGameplayAbility.generated.h"
 
 class UPawnCombatComponent;
+class UWuKongAbilitySystemComponent;
 
 
 UENUM(BlueprintType)
@@ -28,18 +29,19 @@ protected:
 
 	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
-
-	static bool bIsEndingAbility;
 	
-	bool bEnhancedAttackActivated = false;
+	bool bEnhancedAttackActivated;
 	
 	FTimerHandle RestoreEnhancedAttackTimerHandle;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "WuKongAbility")
-	EWuKongAbilityActivationPolicy AbilityActivationPolicy = EWuKongAbilityActivationPolicy::OnTriggered;
+	EWuKongAbilityActivationPolicy AbilityActivationPolicy = EWuKongAbilityActivationPolicy::OnGiven;
 
 	UFUNCTION(BlueprintPure, Category = "WuKongAbility")
 	UPawnCombatComponent* GetPawnCombatComponentFromActorInfo() const;
+
+	UFUNCTION(BlueprintPure, Category = "WuKongAbility")
+	UWuKongAbilitySystemComponent* GetWuKongAbilitySystemComponentFromActorInfo() const;
 	
 	
 };

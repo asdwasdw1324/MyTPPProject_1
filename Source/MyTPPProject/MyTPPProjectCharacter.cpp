@@ -26,7 +26,7 @@
 #include "InputMappingContext.h"
 #include "Component/WuKongCombatComponent.h"
 
-DEFINE_LOG_CATEGORY(LogTemplateCharacter);
+DEFINE_LOG_CATEGORY(LogCharacter);
 DEFINE_LOG_CATEGORY(LogWuKongCharacter);
 DEFINE_LOG_CATEGORY(LogWuKongAbility);
 DEFINE_LOG_CATEGORY_STATIC(TPPCharacterLog, All, All);
@@ -38,12 +38,22 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	PrimaryActorTick.bStartWithTickEnabled = false;
+
 	// 优化网络更新
 	NetUpdateFrequency = 60.0f;
 	MinNetUpdateFrequency = 30.0f;
-	// 优化碰撞设置
-	GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
 
+	// 优化碰撞设置
+	//GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	GetMesh()->SetCollisionObjectType(ECC_Pawn);
+	FCollisionResponseContainer ResponseContainer;
+	ResponseContainer.SetAllChannels(ECR_Ignore);
+	ResponseContainer.SetResponse(ECC_WorldStatic, ECR_Block);
+	ResponseContainer.SetResponse(ECC_WorldDynamic, ECR_Block);
+	GetMesh()->SetCollisionResponseToChannels(ResponseContainer);
+
+	// 默认角色状态为存活
 	CurrentState = EWuKongCharacterState::Alive;
 	
 	// Set size for collision capsule
@@ -54,17 +64,16 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
+	// Mesh Shadow Configuration
 	GetMesh()->bReceivesDecals = false;
 	GetMesh()->bCastDynamicShadow = false;
 	GetMesh()->CastShadow = false;
-
+	GetMesh()->bAffectDynamicIndirectLighting = false;
+	GetMesh()->bCastVolumetricTranslucentShadow = false;
+	
 	// Configure character movement
-	// Character moves in the direction of input...
 	GetCharacterMovement()->bOrientRotationToMovement = true;
-	// ...at this rotation rate
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
-	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
-	// instead of recompiling to adjust them
 	GetCharacterMovement()->JumpZVelocity = 700.f;
 	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
@@ -72,6 +81,7 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint instead of recompiling to adjust them
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -84,12 +94,8 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);// Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
-	//FollowCamera->SetupAttachment(CameraBoom, TEXT("None"));
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
-
-	// Note: The skeletal mesh and animation blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
-
+	
 	//Create Health component for the character, bind health initialization function when health changed
 	TppHealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
 	//TppHealthComponent->OnHealthChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnHealthChangeFunc);
@@ -104,7 +110,7 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 	WuKongInteractComponent = CreateDefaultSubobject<UPropInteractComponent>(TEXT("InteractComp"));
 
 	//Create AbilitySystem and AttributeSet component for the character
-	WuKongAbilitySystemComponent = CreateDefaultSubobject<UWuKongAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	WuKongAbilitySystemComponent = CreateDefaultSubobject<UWuKongAbilitySystemComponent>(TEXT("AbilitySystemComp"));
 	WuKongAttributeSet = CreateDefaultSubobject<UWuKongAttributeSet>(TEXT("AttributeSet"));
 
 	//Create Combat component for the character
@@ -172,37 +178,38 @@ void AMyTPPProjectCharacter::OnPowerChangeFunc(AActor* InstigatorActor, UPowerCo
 //Death function
 void AMyTPPProjectCharacter::WuKongOnDeath()
 {
-	if (CurrentState == EWuKongCharacterState::Dead)
+	if (TppHealthComponent)
 	{
-		return;
-	}
-	CurrentState = EWuKongCharacterState::Dead;
-	OnCharacterStateChanged.Broadcast(CurrentState);
-
-	UE_LOG(TPPCharacterLog, Error, TEXT("Player %s is dead!"), *GetNameSafe(this));
-
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (DeathAnim)
-	{
-		float AnimLength = DeathAnim->GetPlayLength();
-		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("Death anim length: %f"), AnimLength));
-		
-		if (AnimInstance)
+		if (CurrentState == EWuKongCharacterState::Dead)
 		{
-			USkeletalMesh* CharacterMesh = GetMesh()->GetSkeletalMeshAsset();
-			if (CharacterMesh && DeathAnim->GetSkeleton() != CharacterMesh->GetSkeleton())
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("Death animation skeleton mismatch!"));
-				return;
-			}
-
-			AnimInstance->Montage_Play(DeathAnim);
+			return;
 		}
-	}
+		CurrentState = EWuKongCharacterState::Dead;
+		OnCharacterStateChanged.Broadcast(CurrentState);
 
-	GetCharacterMovement()->StopMovementImmediately();
-	GetCharacterMovement()->DisableMovement();
-	SetLifeSpan(3.0f);
+		UE_LOG(TPPCharacterLog, Error, TEXT("Player %s is dead!"), *GetNameSafe(this));
+
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (DeathAnim)
+		{
+			if (AnimInstance)
+			{
+				USkeletalMesh* CharacterMesh = GetMesh()->GetSkeletalMeshAsset();
+				if (CharacterMesh && DeathAnim->GetSkeleton() != CharacterMesh->GetSkeleton())
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("Death animation skeleton mismatch!"));
+					return;
+				}
+
+				AnimInstance->Montage_Play(DeathAnim);
+			}
+		}
+
+		GetCharacterMovement()->StopMovementImmediately();
+		GetCharacterMovement()->DisableMovement();
+		SetLifeSpan(3.0f);
+	}
+	
 	
 }
 
@@ -222,14 +229,10 @@ void AMyTPPProjectCharacter::WuKongOnStateChanged(EWuKongCharacterState NewState
 			PC->SetInputMode(InputMode);
 			ShowDeathUI();
 			PC->bShowMouseCursor = true;
+			PC->ChangeState(NAME_Spectating);
 
-			GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Orange, FString::Printf(TEXT("Please select an option to continue!!!")));
-
-			//切换到观察者模式（如果需要）
-			// if (Controller)
-			// {
-			//      Controller->ChangeState(NAME_Spectating);
-			// }
+			GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Orange, FString::Printf(TEXT("You have dead!/nPlease select an option to continue!!!")));
+			
 		}
 	}
 	if (NewState == EWuKongCharacterState::Alive)
@@ -343,8 +346,7 @@ void AMyTPPProjectCharacter::WuKongTeleport()
 			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
 			PlayAnimMontage(TeleportMontage);
-
-			//ADashProjectile* DashProjectile = nullptr;
+			
 			ADashProjectile* DashProjectile = World->SpawnActor<ADashProjectile>(DashProj, SpawnTM, SpawnParams);
 			
 			TppPowerComponent->SetPower(currentpower - 50.0f);
@@ -423,7 +425,7 @@ void AMyTPPProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 	} 
 	else
 	{
-		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
+		UE_LOG(LogCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
 }
 

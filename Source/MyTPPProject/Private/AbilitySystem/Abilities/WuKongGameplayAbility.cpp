@@ -19,7 +19,7 @@ void UWuKongGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* Acto
 	{
 		if (ActorInfo && ActorInfo->AbilitySystemComponent.IsValid() && !Spec.IsActive())
 		{
-			//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Attempting to activate ability..."));
+			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Attempting to activate ability..."));
 
 			// 检查能力是否已经激活
 			if (bEnhancedAttackActivated)
@@ -38,7 +38,7 @@ void UWuKongGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* Acto
 				if (ActorInfo->OwnerActor.IsValid())
 				{
 					// 确保之前的计时器被清理
-					if (RestoreEnhancedAttackTimerHandle.IsValid())
+					if (GetWorld()->GetTimerManager().IsTimerActive(RestoreEnhancedAttackTimerHandle))
 					{
 						ActorInfo->OwnerActor->GetWorld()->GetTimerManager().ClearTimer(RestoreEnhancedAttackTimerHandle);
 					}
@@ -103,13 +103,26 @@ UPawnCombatComponent* UWuKongGameplayAbility::GetPawnCombatComponentFromActorInf
 
 	if (CurrentActorInfo->AvatarActor.IsValid())
 	{
-		return Cast<UPawnCombatComponent>(CurrentActorInfo->AvatarActor->GetComponentByClass(UPawnCombatComponent::StaticClass()));
+		//return Cast<UPawnCombatComponent>(CurrentActorInfo->AvatarActor->GetComponentByClass(UPawnCombatComponent::StaticClass()));
+		return GetAvatarActorFromActorInfo()->FindComponentByClass<UPawnCombatComponent>();
 	}
-	//return GetAvatarActorFromActorInfo()->FindComponentByClass<UPawnCombatComponent>();
 
 	UE_LOG(LogTemp, Warning, TEXT("AvatarActor is invalid!"));
 	return nullptr;
 }
+
+UWuKongAbilitySystemComponent* UWuKongGameplayAbility::GetWuKongAbilitySystemComponentFromActorInfo() const
+{
+	if (!CurrentActorInfo)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("CurrentActorInfo is invalid!"));
+		return nullptr;
+	}
+
+	return Cast<UWuKongAbilitySystemComponent>(CurrentActorInfo->AbilitySystemComponent.Get());
+	
+}
+
 
 
 

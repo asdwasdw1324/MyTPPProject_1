@@ -18,6 +18,9 @@ class MYTPPPROJECT_API UWuKongEnhancedInputComponent : public UEnhancedInputComp
 public:
 	template<class UserObject,typename CallbackFunc>
 	void BindNativeInputAction(const UDataAsset_InputConfig* InInputConfig,const FGameplayTag& InInputTag,ETriggerEvent TriggerEvent,UserObject* ContextObject,CallbackFunc Func);
+
+	template<class UserObject,typename CallbackFunc>
+	void BindAbilityInputAction(const UDataAsset_InputConfig* InInputConfig, UserObject* ContextObject, CallbackFunc InputPressedFunc, CallbackFunc InputReleasedFunc);
 };
 
 template<class UserObject, typename CallbackFunc>
@@ -30,3 +33,16 @@ inline void UWuKongEnhancedInputComponent::BindNativeInputAction(const UDataAsse
 		BindAction(FoundAction,TriggerEvent,ContextObject,Func);
 	}
 };
+
+template<class UserObject,typename CallbackFunc>
+inline void UWuKongEnhancedInputComponent::BindAbilityInputAction(const UDataAsset_InputConfig* InInputConfig, UserObject* ContextObject, CallbackFunc InputPressedFunc, CallbackFunc InputReleasedFunc)
+{
+	checkf(InInputConfig,TEXT("Input config data asset is null,can not proceed with binding"));
+
+	for (const FWuKongInputActionConfig& AbilityInputActionConfig : InInputConfig->AbilityInputActions)
+	{
+		if (!AbilityInputActionConfig.IsValid()) continue;
+		
+		
+	}
+}

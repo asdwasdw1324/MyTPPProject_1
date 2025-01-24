@@ -27,9 +27,12 @@ class UWuKongCombatComponent;
 struct FInputActionValue;
 struct FGameplayAbilitySpecHandle;
 
-DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogCharacter, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LogWuKongCharacter, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LogWuKongAbility, Log, All);
+
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterStateChanged, EWuKongCharacterState, NewState);
 
 
 UENUM(BlueprintType)
@@ -236,10 +239,7 @@ public:
 	//Judge the PowerHealTimerHandle is running
 	UFUNCTION(BlueprintCallable)
 	void JudgePowerHealTimerHandleRunning();
-
-	// 添加委托
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterStateChanged, EWuKongCharacterState, NewState);
-
+	
 	UPROPERTY(BlueprintAssignable, Category = State)
 	FOnCharacterStateChanged OnCharacterStateChanged;
 	

@@ -18,19 +18,19 @@ class MYTPPPROJECT_API UPawnCombatComponent : public UPawnExtensionComponentBase
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "Pawn Combat")
-	void RegisterSpawnedWeapon(FGameplayTag InWeaponTagToRegister, AEnhancedEffectActor* InWeaponToRegister, bool bInShouldBeEquipped = true);
+	UFUNCTION(BlueprintCallable, Category = "WuKong|PawnCombat")
+	void RegisterSpawnedWeapon(FGameplayTag InWeaponTagToRegister, AEnhancedEffectActor* InWeaponToRegister, bool bRegisterAsEquippedWeapon = false);
 
-	UFUNCTION(BlueprintCallable, Category = "Pawn Combat")
+	UFUNCTION(BlueprintCallable, Category = "WuKong|PawnCombat")
 	void UnRegisterSpawnedWeapon(FGameplayTag InWeaponTagToUnRegister);
 	
-	UFUNCTION(BlueprintCallable, Category = "Pawn Combat")
+	UFUNCTION(BlueprintCallable, Category = "WuKong|PawnCombat")
 	AEnhancedEffectActor* GetWuKongCarriedWeaponByTag(FGameplayTag InWeaponTagToGet) const;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Pawn Combat")
+	UPROPERTY(BlueprintReadWrite, Category = "WuKong|PawnCombat")
 	FGameplayTag CurrentEquippedWeaponTag;
 
-	UFUNCTION(BlueprintCallable, Category = "Pawn Combat")
+	UFUNCTION(BlueprintCallable, Category = "WuKong|PawnCombat")
 	AEnhancedEffectActor* GetWuKongCurrentEquippedWeapon() const;
 
 private:
