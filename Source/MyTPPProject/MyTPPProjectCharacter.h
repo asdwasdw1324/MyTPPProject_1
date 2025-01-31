@@ -32,15 +32,12 @@ DECLARE_LOG_CATEGORY_EXTERN(LogWuKongCharacter, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LogWuKongAbility, Log, All);
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterStateChanged, EWuKongCharacterState, NewState);
-
-
 UENUM(BlueprintType)
 enum class EWuKongCharacterState : uint8
 {
-	Alive,
-	Dead,
-	Stunned,
+	Alive UMETA(DisplayName = "Alive"),
+	Dead UMETA(DisplayName = "Dead"),
+	Stunned UMETA(DisplayName = "Stunned"),
 	// ... 其他状态
 };
 
@@ -239,6 +236,8 @@ public:
 	//Judge the PowerHealTimerHandle is running
 	UFUNCTION(BlueprintCallable)
 	void JudgePowerHealTimerHandleRunning();
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterStateChanged, EWuKongCharacterState, NewState);
 	
 	UPROPERTY(BlueprintAssignable, Category = State)
 	FOnCharacterStateChanged OnCharacterStateChanged;

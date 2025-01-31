@@ -18,7 +18,10 @@ public class MyTPPProject : ModuleRules
 			"GameplayTasks", 
 			"UMG", 
 			"GameplayTags", 
-			"GameplayAbilities"
+			"GameplayAbilities",
+			"Json",
+			"JsonUtilities",
+			"HTTP"
 		});
 	}
 }

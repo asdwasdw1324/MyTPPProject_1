@@ -5,6 +5,7 @@
 
 namespace WuKongGameplayTags
 {
+	/** INPUT TAGS**/
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Move, "InputTag.Move")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Look, "InputTag.Look")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_NormalAttack, "InputTag.NormalAttack")
@@ -13,7 +14,8 @@ namespace WuKongGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Interact, "InputTag.Interact")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_EnhancedAttack, "InputTag.EnhancedAttack")
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_DisEnhancedAttack, "InputTag.DisEnhancedAttack")
-	
+
+	/** PLAY TAGS**/
 	UE_DEFINE_GAMEPLAY_TAG(PlayTag_Weapon_EnhancedEffector, "PlayTag.Weapon.EnhancedEffector")
 	
 }
