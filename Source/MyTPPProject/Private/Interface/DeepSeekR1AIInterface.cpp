@@ -8,6 +8,7 @@
 #include "Interfaces/IHttpResponse.h"
 #include "Kismet\GameplayStatics.h"
 #include "MyTPPProject/MyTPPProjectCharacter.h"
+#include "BaseGeometryActor.h"
 
 
 ADeepSeekR1AIInterface::ADeepSeekR1AIInterface()
@@ -42,6 +43,8 @@ void ADeepSeekR1AIInterface::BeginPlay()
     // 绑定交互事件
     InteractionSphere->OnComponentBeginOverlap.AddDynamic(this, &ADeepSeekR1AIInterface::OnInteractionSphereBeginOverlap);
     InteractionSphere->OnComponentEndOverlap.AddDynamic(this, &ADeepSeekR1AIInterface::OnInteractionSphereEndOverlap);
+
+    RobInitialLocation = GetActorLocation();
 }
 
 void ADeepSeekR1AIInterface::Tick(float DeltaTime)
@@ -49,6 +52,7 @@ void ADeepSeekR1AIInterface::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
 
     // 这里可以添加一些动画效果或其他更新逻辑
+    MoveLogic();
 }
 
 void ADeepSeekR1AIInterface::AskQuestion(const FString& Question, AActor* ContextActor)
@@ -189,6 +193,8 @@ void ADeepSeekR1AIInterface::OnInteractionSphereBeginOverlap(UPrimitiveComponent
         bIsPlayerInRange = true;
         ShowInteractionWidget();
     }
+
+    GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, TEXT("Player in range"));
 }
 
 void ADeepSeekR1AIInterface::OnInteractionSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, 
@@ -200,6 +206,8 @@ void ADeepSeekR1AIInterface::OnInteractionSphereEndOverlap(UPrimitiveComponent* 
         bIsPlayerInRange = false;
         HideInteractionWidget();
     }
+
+    GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, TEXT("Player out of range"));
 }
 
 void ADeepSeekR1AIInterface::ShowInteractionWidget()
@@ -215,5 +223,18 @@ void ADeepSeekR1AIInterface::HideInteractionWidget()
     if (InteractionWidget)
     {
         InteractionWidget->SetVisibility(false);
+    }
+}
+
+void ADeepSeekR1AIInterface::MoveLogic()
+{
+    FVector CurrentLocation = GetActorLocation();
+    if (GetWorld())
+    {
+        FGeometryData RobGeometryData;
+        float Time = GetWorld()->GetTimeSeconds();
+        CurrentLocation.Z = RobInitialLocation.Z + RobGeometryData.GeoAmplitude * FMath::Sin(RobGeometryData.GeoFrequency * Time);
+
+        SetActorLocation(CurrentLocation);
     }
 }

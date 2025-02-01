@@ -66,6 +66,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "DeepSeek R1 AI")
     void HideInteractionWidget();
 
+    UFUNCTION(BlueprintCallable, Category = "Movement")
+    void MoveLogic();
+
 protected:
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
@@ -89,4 +92,6 @@ private:
 
     // 当前是否有玩家在交互范围内
     bool bIsPlayerInRange;
+
+    FVector RobInitialLocation;
 };
