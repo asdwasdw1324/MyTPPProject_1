@@ -21,7 +21,9 @@ public class MyTPPProject : ModuleRules
 			"GameplayAbilities",
 			"Json",
 			"JsonUtilities",
-			"HTTP"
+			"HTTP",
+			"UnrealEd",
+			"StaticMeshDescription"
 		});
 	}
 }
