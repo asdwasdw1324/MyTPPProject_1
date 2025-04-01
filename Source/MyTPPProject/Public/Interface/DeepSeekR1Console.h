@@ -6,7 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "DeepSeekR1Console.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable, BlueprintType, meta = (DisplayName = "DeepSeek Console"))
 class ADeepSeekR1Console : public AActor
 {
 	GENERATED_BODY()
@@ -14,12 +14,15 @@ class ADeepSeekR1Console : public AActor
 public:
 	ADeepSeekR1Console();
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "DeepSeek R1 Console")
+	bool bDebugMode = false;
+
 	// Console command to ask questions
-	UFUNCTION(Exec)
+	UFUNCTION(Exec, BlueprintCallable, Category = "DeepSeek")
 	void AskDeepSeek(const FString& Question);
 
 	// Console command to analyze current scene or actor
-	UFUNCTION(Exec)
+	UFUNCTION(Exec, BlueprintCallable, Category = "DeepSeek")
 	void AnalyzeSceneDeepSeek();
 
 protected:

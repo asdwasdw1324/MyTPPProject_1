@@ -21,7 +21,7 @@ class IDeepSeekR1Interface
     GENERATED_BODY()
 
 public:
-    // 定义接口方法
-    virtual void AskQuestion(const FString& Question, AActor* ContextActor = nullptr) = 0;
-    virtual void AnalyzeScene(AActor* TargetActor = nullptr) = 0;
+    // 两个主要的接口方法
+    virtual void AskQuestion(const FString& Question, AActor* ContextActor = nullptr) = 0;  // 提问方法
+    virtual void AnalyzeScene(AActor* TargetActor = nullptr) = 0;  // 场景分析方法
 };

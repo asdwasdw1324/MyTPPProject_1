@@ -9,17 +9,21 @@
 #include "Kismet\GameplayStatics.h"
 #include "MyTPPProject/MyTPPProjectCharacter.h"
 #include "BaseGeometryActor.h"
+#include "Components/SphereComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/WidgetComponent.h"
+#include "JsonUtilities.h"
 
 
 ADeepSeekR1AIInterface::ADeepSeekR1AIInterface()
 {
     PrimaryActorTick.bCanEverTick = true;
-    ApiEndpoint = TEXT("https://api.deepseek.com/v1/chat"); // 替换为实际的DeepSeek API端点
+    ApiEndpoint = TEXT("https://api.deepseek.com/v1/chat/completions"); // 替换为实际的DeepSeek API端点
 
     // 创建交互范围球体
     InteractionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("InteractionSphere"));
     RootComponent = InteractionSphere;
-    InteractionSphere->SetSphereRadius(200.0f);
+    InteractionSphere->SetSphereRadius(500.0f);
     InteractionSphere->SetCollisionProfileName(TEXT("OverlapAll"));
     
     // 创建机器人模型
@@ -36,13 +40,25 @@ ADeepSeekR1AIInterface::ADeepSeekR1AIInterface()
     bIsPlayerInRange = false;
 }
 
+void ADeepSeekR1AIInterface::PostInitializeComponents()
+{
+    Super::PostInitializeComponents();
+
+    // 绑定交互事件
+    if (InteractionSphere)
+    {
+        InteractionSphere->OnComponentBeginOverlap.AddDynamic(this, &ADeepSeekR1AIInterface::OnInteractionSphereBeginOverlap);
+        InteractionSphere->OnComponentEndOverlap.AddDynamic(this, &ADeepSeekR1AIInterface::OnInteractionSphereEndOverlap);
+    }
+}
+
 void ADeepSeekR1AIInterface::BeginPlay()
 {
     Super::BeginPlay();
     
     // 绑定交互事件
-    InteractionSphere->OnComponentBeginOverlap.AddDynamic(this, &ADeepSeekR1AIInterface::OnInteractionSphereBeginOverlap);
-    InteractionSphere->OnComponentEndOverlap.AddDynamic(this, &ADeepSeekR1AIInterface::OnInteractionSphereEndOverlap);
+    //InteractionSphere->OnComponentBeginOverlap.AddDynamic(this, &ADeepSeekR1AIInterface::OnInteractionSphereBeginOverlap);
+    //InteractionSphere->OnComponentEndOverlap.AddDynamic(this, &ADeepSeekR1AIInterface::OnInteractionSphereEndOverlap);
 
     RobInitialLocation = GetActorLocation();
 }
@@ -52,7 +68,7 @@ void ADeepSeekR1AIInterface::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
 
     // 这里可以添加一些动画效果或其他更新逻辑
-    MoveLogic();
+    
 }
 
 void ADeepSeekR1AIInterface::AskQuestion(const FString& Question, AActor* ContextActor)
@@ -65,15 +81,34 @@ void ADeepSeekR1AIInterface::AskQuestion(const FString& Question, AActor* Contex
 
     // 获取场景上下文
     FString Context = GetSceneContext(ContextActor);
-    
-    // 构建请求内容
-    TSharedPtr<FJsonObject> RequestObj = MakeShared<FJsonObject>();
-    RequestObj->SetStringField(TEXT("question"), Question);
-    RequestObj->SetStringField(TEXT("context"), Context);
 
+    // 添加用户问题到历史
+    AddHistoryEntry("user", Question);
+    
+    // 构建请求体
+    TSharedPtr<FJsonObject> RequestObj = MakeShared<FJsonObject>();
+    RequestObj->SetStringField("model", "deepseek-chat");
+    RequestObj->SetBoolField("stream", false);
+
+    TArray<TSharedPtr<FJsonValue>> Messages;
+    for (const auto& Entry : ConversationHistory)
+    {
+        TSharedPtr<FJsonObject> MessageObj = MakeShared<FJsonObject>();
+        MessageObj->SetStringField("role", Entry.Role);
+        MessageObj->SetStringField("content", Entry.Content);
+        Messages.Add(MakeShared<FJsonValueObject>(MessageObj));
+    }
+    RequestObj->SetArrayField("messages", Messages);
+
+    // 序列化请求
     FString RequestBody;
     TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&RequestBody);
     FJsonSerializer::Serialize(RequestObj.ToSharedRef(), Writer);
+
+    UE_LOG(LogTemp, Warning, TEXT("Request Body: %s"), *RequestBody);
+
+    //创建安全弱引用
+    TWeakObjectPtr<ADeepSeekR1AIInterface> WeakThis(this);
 
     // 创建HTTP请求
     TSharedRef<IHttpRequest, ESPMode::ThreadSafe> HttpRequestPtr = FHttpModule::Get().CreateRequest();
@@ -84,17 +119,46 @@ void ADeepSeekR1AIInterface::AskQuestion(const FString& Question, AActor* Contex
     HttpRequestPtr->SetContentAsString(RequestBody);
     HttpRequestPtr->SetTimeout(30.0f);  // 设置30秒超时
 
-    // 设置回调
-    HttpRequestPtr->OnProcessRequestComplete().BindLambda([this](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
+    // 设置安全线程回调
+    Request->OnProcessRequestComplete().BindLambda([WeakThis](FHttpRequestPtr Req, FHttpResponsePtr Res, bool bSuccess)
     {
-        if (bSuccess && Response.IsValid())
+        if (bStreamResponse) {
+        // 流式响应示例（分块处理）：
+        TArray<FString> Chunks = SplitResponseIntoChunks(Res->GetContentAsString());
+        for (const FString& Chunk : Chunks) {
+            ProcessStreamChunk(Chunk);
+        }
+    }
+        else{
+        if (!WeakThis.IsValid()) return;
+
+        if (bSuccess && Res.IsValid() && Res->GetResponseCode() == 200)
         {
-            FString ResponseString = Response->GetContentAsString();
-            ProcessAIResponse(ResponseString);
+            FString ResponseBody = Res->GetContentAsString();
+            
+            // 切换到游戏线程处理
+            AsyncTask(ENamedThreads::GameThread, [WeakThis, ResponseBody]()
+            {
+                if (WeakThis.IsValid())
+                {
+                    WeakThis->ProcessAIResponse(ResponseBody);
+                }
+            });
         }
         else
         {
-            OnAIResponseReceived.Broadcast(TEXT("Failed to communicate with DeepSeek AI"));
+            FString ErrorMsg = Res.IsValid() ? 
+                FString::Printf(TEXT("Error %d: %s"), Res->GetResponseCode(), *Res->GetContentAsString()) :
+                TEXT("Network Error");
+
+            AsyncTask(ENamedThreads::GameThread, [WeakThis, ErrorMsg]()
+            {
+                if (WeakThis.IsValid())
+                {
+                    WeakThis->OnAIResponseReceived.Broadcast(FString::Printf(TEXT("Error: %s"), *ErrorMsg));
+                }
+            });
+        }
         }
     });
 
@@ -121,6 +185,7 @@ void ADeepSeekR1AIInterface::ProcessAIResponse(const FString& Response)
         if (JsonObject->TryGetStringField(TEXT("response"), AIResponse))
         {
             OnAIResponseReceived.Broadcast(AIResponse);
+            UE_LOG(LogTemp, Warning, TEXT("Response: %s"), *Response);
         }
         else
         {
@@ -159,26 +224,20 @@ FString ADeepSeekR1AIInterface::GetSceneContext(AActor* ContextActor)
             Context += FString::Printf(TEXT("- %s\n"), *Component->GetName());
         }
     }
-    else
-    {
-        // 获取整个场景信息
-        UWorld* World = GetWorld();
-        if (World)
-        {
-            TArray<AActor*> AllActors;
-            UGameplayStatics::GetAllActorsOfClass(World, AActor::StaticClass(), AllActors);
-            
-            Context += TEXT("Scene Overview:\n");
-            for (AActor* Actor : AllActors)
-            {
-                Context += FString::Printf(TEXT("- %s at Location: X=%f, Y=%f, Z=%f\n"),
-                    *Actor->GetName(),
-                    Actor->GetActorLocation().X,
-                    Actor->GetActorLocation().Y,
-                    Actor->GetActorLocation().Z);
-            }
-        }
-    }
+    //else
+    //{
+        // 获取整个场景信息 
+        //    Context += TEXT("Scene Overview:\n");
+        //    for (AActor* Actor : AllActors)
+        //   {
+        //        Context += FString::Printf(TEXT("- %s at Location: X=%f, Y=%f, Z=%f\n"),
+        //           *Actor->GetName(),
+        //            Actor->GetActorLocation().X,
+        //           Actor->GetActorLocation().Y,
+        //            Actor->GetActorLocation().Z);
+        //    }
+        //}
+    //}
 
     return Context;
 }
@@ -194,7 +253,7 @@ void ADeepSeekR1AIInterface::OnInteractionSphereBeginOverlap(UPrimitiveComponent
         ShowInteractionWidget();
     }
 
-    GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, TEXT("Player in range"));
+    GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("Player in range, ready to ask question"));
 }
 
 void ADeepSeekR1AIInterface::OnInteractionSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, 
@@ -207,7 +266,7 @@ void ADeepSeekR1AIInterface::OnInteractionSphereEndOverlap(UPrimitiveComponent* 
         HideInteractionWidget();
     }
 
-    GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, TEXT("Player out of range"));
+    GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, TEXT("Player out of range, dismiss the questionwidget"));
 }
 
 void ADeepSeekR1AIInterface::ShowInteractionWidget()
@@ -237,4 +296,14 @@ void ADeepSeekR1AIInterface::MoveLogic()
 
         SetActorLocation(CurrentLocation);
     }
+}
+
+void ADeepSeekR1AIInterface::AddHistoryEntry(const FString& Role, const FString& Content)
+{
+    // 保持历史记录长度（示例保留最近5轮）
+    if (ConversationHistory.Num() >= 10) // 5轮对话（user+assistant各一条为一轮）
+    {
+        ConversationHistory.RemoveAt(0, 2);
+    }
+    ConversationHistory.Add({Role, Content});
 }

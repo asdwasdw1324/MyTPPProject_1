@@ -30,8 +30,18 @@ class ADeepSeekR1AIInterface : public AActor, public IDeepSeekR1Interface
 public:
     ADeepSeekR1AIInterface();
 
+    // 对话历史结构
+    struct FConversationEntry
+    {
+        FString Role;    // "user" 或 "assistant"
+        FString Content; // 对话内容
+    };
+
     // Implementation of IDeepSeekR1Interface
+    UFUNCTION(BlueprintCallable) // 允许在蓝图中调用
     virtual void AskQuestion(const FString& Question, AActor* ContextActor = nullptr) override;
+    
+    UFUNCTION(BlueprintCallable) // 允许在蓝图中调用
     virtual void AnalyzeScene(AActor* TargetActor = nullptr) override;
 
     // Event dispatcher for when AI response is received
@@ -69,8 +79,11 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Movement")
     void MoveLogic();
 
+    void AddHistoryEntry(const FString& Role, const FString& Content);
+
 protected:
     virtual void BeginPlay() override;
+
     virtual void Tick(float DeltaTime) override;
 
     // Internal function to process AI responses
@@ -90,8 +103,14 @@ private:
     UPROPERTY(EditDefaultsOnly, Category = "DeepSeek R1 AI", meta = (AllowPrivateAccess = "true"))
     FString ApiKey;
 
+    TArray<FConversationEntry> ConversationHistory; // 对话历史记录
+    
+    FString CurrentContext; // 当前场景上下文
+
     // 当前是否有玩家在交互范围内
     bool bIsPlayerInRange;
 
     FVector RobInitialLocation;
+
+    virtual void PostInitializeComponents() override;
 };

@@ -13,13 +13,25 @@ void ADeepSeekR1Console::BeginPlay()
 	// 创建AI接口实例
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
-	AIInterface = GetWorld()->SpawnActor<ADeepSeekR1AIInterface>(ADeepSeekR1AIInterface::StaticClass(), SpawnParams);
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	AIInterface = GetWorld()->SpawnActor<ADeepSeekR1AIInterface>(ADeepSeekR1AIInterface::StaticClass(), FTransform::Identity, SpawnParams);
 
 	// 绑定回调
-	if (AIInterface)
+	if (!AIInterface)
 	{
-		AIInterface->OnAIResponseReceived.AddDynamic(this, &ADeepSeekR1Console::OnAIResponse);
+		UE_LOG(LogTemp, Warning, TEXT("Failed to spawn AI Interface!"));
 	}
+
+	if (!AIInterface->GetClass()->ImplementsInterface(UDeepSeekR1Interface::StaticClass()))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Spawned actor missing interface implementation"));
+		AIInterface->Destroy();
+		AIInterface = nullptr;
+		return;
+	}
+
+	AIInterface->OnAIResponseReceived.AddDynamic(this, &ADeepSeekR1Console::OnAIResponse);
+	
 }
 
 void ADeepSeekR1Console::AskDeepSeek(const FString& Question)
@@ -48,12 +60,18 @@ void ADeepSeekR1Console::AnalyzeSceneDeepSeek()
 
 void ADeepSeekR1Console::OnAIResponse(const FString& Response)
 {
-	// 在控制台输出AI响应
-	UE_LOG(LogTemp, Log, TEXT("DeepSeek AI Response: %s"), *Response);
-    
-	// 在屏幕上显示消息
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, Response);
-	}
+    AsyncTask(ENamedThreads::GameThread, [this, Response]()
+    {
+        UE_LOG(LogTemp, Log, TEXT("[DeepSeek] AI Response: %s"), *Response);
+        
+        if (GEngine && !IsPendingKill())
+        {
+            GEngine->AddOnScreenDebugMessage(
+                -1, 
+                5.0f,
+                FColor::Green,
+                FString::Printf(TEXT("DeepSeek: %s"), *Response.Left(200)) // 限制显示长度
+            );
+        }
+    });
 }
