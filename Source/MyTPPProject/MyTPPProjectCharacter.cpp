@@ -47,6 +47,7 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 	//GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	GetMesh()->SetCollisionObjectType(ECC_Pawn);
+	
 	FCollisionResponseContainer ResponseContainer;
 	ResponseContainer.SetAllChannels(ECR_Ignore);
 	ResponseContainer.SetResponse(ECC_WorldStatic, ECR_Block);
@@ -66,9 +67,9 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 
 	// Mesh Shadow Configuration
 	GetMesh()->bReceivesDecals = false;
-	GetMesh()->bCastDynamicShadow = false;
-	GetMesh()->CastShadow = false;
-	GetMesh()->bAffectDynamicIndirectLighting = false;
+	GetMesh()->bCastDynamicShadow = true;
+	GetMesh()->CastShadow = true;
+	GetMesh()->bAffectDynamicIndirectLighting = true;
 	GetMesh()->bCastVolumetricTranslucentShadow = false;
 	
 	// Configure character movement
@@ -99,8 +100,6 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 	//Create Health component for the character, bind health initialization function when health changed
 	TppHealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
 	//TppHealthComponent->OnHealthChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnHealthChangeFunc);
-	/** Bind Death function after broadcasting OnDeath delegate*/
-	//TppHealthComponent->OnDeath.AddUObject(this, &AMyTPPProjectCharacter::WuKongOnDeath);
 
 	//Create Power component for the character, bind power initialization function when power changed
 	TppPowerComponent = CreateDefaultSubobject<UPowerComponent>(TEXT("PowerComp"));
@@ -186,13 +185,12 @@ void AMyTPPProjectCharacter::WuKongOnDeath()
 		}
 		CurrentState = EWuKongCharacterState::Dead;
 		OnCharacterStateChanged.Broadcast(CurrentState);
-
 		UE_LOG(TPPCharacterLog, Error, TEXT("Player %s is dead!"), *GetNameSafe(this));
 
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-		if (DeathAnim)
+		if (Ensure(DeathAnim))
 		{
-			if (AnimInstance)
+			if (Ensure(AnimInstance))
 			{
 				USkeletalMesh* CharacterMesh = GetMesh()->GetSkeletalMeshAsset();
 				if (CharacterMesh && DeathAnim->GetSkeleton() != CharacterMesh->GetSkeleton())
@@ -227,6 +225,7 @@ void AMyTPPProjectCharacter::WuKongOnStateChanged(EWuKongCharacterState NewState
 			FInputModeUIOnly InputMode;
 			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 			PC->SetInputMode(InputMode);
+			
 			ShowDeathUI();
 			PC->bShowMouseCursor = true;
 			PC->ChangeState(NAME_Spectating);
@@ -244,9 +243,12 @@ void AMyTPPProjectCharacter::WuKongOnStateChanged(EWuKongCharacterState NewState
 void AMyTPPProjectCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
+	
 	TppHealthComponent->OnHealthChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnHealthChangeFunc);
 	TppHealthComponent->OnDeath.AddUObject(this, &AMyTPPProjectCharacter::WuKongOnDeath);
+	
 	TppPowerComponent->OnPowerChanged.AddDynamic(this, &AMyTPPProjectCharacter::OnPowerChangeFunc);
+	
 	OnCharacterStateChanged.AddDynamic(this, &AMyTPPProjectCharacter::WuKongOnStateChanged);
 }
 
@@ -484,6 +486,7 @@ void AMyTPPProjectCharacter::RestartGameAfterDeath()
 	{
 		PC->RestartLevel();
 		PC->bShowMouseCursor = false;
+		
 		FInputModeGameOnly InputMode;
 		InputMode.SetConsumeCaptureMouseDown(true);
 		PC->SetInputMode(InputMode);

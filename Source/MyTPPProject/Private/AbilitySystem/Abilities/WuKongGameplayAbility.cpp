@@ -38,11 +38,11 @@ void UWuKongGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* Acto
 				if (ActorInfo->OwnerActor.IsValid())
 				{
 					// 确保之前的计时器被清理
-					if (GetWorld()->GetTimerManager().IsTimerActive(RestoreEnhancedAttackTimerHandle))
+					if (ActorInfo->OwnerActor->GetWorld()->GetTimerManager().IsTimerActive(RestoreEnhancedAttackTimerHandle))
 					{
 						ActorInfo->OwnerActor->GetWorld()->GetTimerManager().ClearTimer(RestoreEnhancedAttackTimerHandle);
 					}
-
+					// 设置计时器以恢复能力
 					FTimerDelegate TimerDelegate;
 					TimerDelegate.BindLambda([this, Handle = Spec.Handle, ActorInfo]()
 					{
@@ -80,7 +80,7 @@ void UWuKongGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 	
 	// 标记我们的增强状态为关闭
 	bEnhancedAttackActivated = false;
-	//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("Enhanced Attack Status set to false"));
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("Enhanced Attack Status set to false"));
 
 	// 清理计时器
 	if (RestoreEnhancedAttackTimerHandle.IsValid() && ActorInfo->OwnerActor.IsValid())

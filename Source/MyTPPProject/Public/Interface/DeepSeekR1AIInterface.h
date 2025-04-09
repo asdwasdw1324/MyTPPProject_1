@@ -8,6 +8,8 @@
 #include "Components/WidgetComponent.h"
 #include "DeepSeekR1AIInterface.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAIResponseReceived, const FString&, Response);
+
 USTRUCT(BlueprintType)
 struct FDeepSeekResponse
 {
@@ -20,7 +22,13 @@ struct FDeepSeekResponse
     bool Success;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAIResponseReceived, const FString&, Response);
+// 对话历史结构
+USTRUCT(BlueprintType)
+struct FConversationEntry
+{
+    FString Role;    // "user" 或 "assistant"
+    FString Content; // 对话内容
+};
 
 UCLASS()
 class ADeepSeekR1AIInterface : public AActor, public IDeepSeekR1Interface
@@ -29,13 +37,6 @@ class ADeepSeekR1AIInterface : public AActor, public IDeepSeekR1Interface
 
 public:
     ADeepSeekR1AIInterface();
-
-    // 对话历史结构
-    struct FConversationEntry
-    {
-        FString Role;    // "user" 或 "assistant"
-        FString Content; // 对话内容
-    };
 
     // Implementation of IDeepSeekR1Interface
     UFUNCTION(BlueprintCallable) // 允许在蓝图中调用
@@ -110,7 +111,9 @@ private:
     // 当前是否有玩家在交互范围内
     bool bIsPlayerInRange;
 
+    // Rob的初始位置
     FVector RobInitialLocation;
 
+    //初始化组件
     virtual void PostInitializeComponents() override;
 };

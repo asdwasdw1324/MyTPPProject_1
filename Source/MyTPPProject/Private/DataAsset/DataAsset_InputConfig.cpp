@@ -15,3 +15,15 @@ UInputAction* UDataAsset_InputConfig::FindNativeInputActionByTag(const FGameplay
 
 	return nullptr;
 }
+
+UInputAction* UDataAsset_InputConfig::FindAbilityInputActionByTag(const FGameplayTag& InInputTag) const
+{
+	for (const FWuKongInputActionConfig& InputActionConfig : AbilityInputActions)
+	{
+		if (InputActionConfig.InputTag == InInputTag && InputActionConfig.InputAction)
+		{
+			return InputActionConfig.InputAction;
+		}
+	}
+	return nullptr;
+}

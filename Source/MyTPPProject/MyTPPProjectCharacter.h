@@ -54,37 +54,9 @@ class AMyTPPProjectCharacter : public ACharacter, public IAbilitySystemInterface
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCameraComponent> FollowCamera;
 	
-	/** MappingContext */
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	//UInputMappingContext* DefaultMappingContext;
-
 	/** Internal Jumping Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> JumpAction;
-
-	/** Move Input Action */
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	//UInputAction* MoveAction;
-
-	/** Look Input Action */
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	//UInputAction* LookAction;
-
-	/** NormalAttack Input Action */
-	//UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	//UInputAction* NormalAttackAction;
-
-	/** Teleport Input Action */
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	//UInputAction* TeleportProjectile;
-
-	/** Interact Input Action */
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	//UInputAction* Interact_Prop;
-
-	/** ChargedAttack Input Action */
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	//UInputAction* ChargedAttack;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UDataAsset_InputConfig> InputConfigDataAsset;

@@ -48,5 +48,6 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (TitleProperty = "InputTag"))
 	TArray<FWuKongInputActionConfig> AbilityInputActions;
-	
+
+	UInputAction* FindAbilityInputActionByTag(const FGameplayTag& InInputTag) const;
 };

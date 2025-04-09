@@ -6,7 +6,7 @@
 #include "Json.h"
 #include "JsonObjectConverter.h"
 #include "Interfaces/IHttpResponse.h"
-#include "Kismet\GameplayStatics.h"
+#include "Kismet/GameplayStatics.h"
 #include "MyTPPProject/MyTPPProjectCharacter.h"
 #include "BaseGeometryActor.h"
 #include "Components/SphereComponent.h"
@@ -56,10 +56,6 @@ void ADeepSeekR1AIInterface::BeginPlay()
 {
     Super::BeginPlay();
     
-    // 绑定交互事件
-    //InteractionSphere->OnComponentBeginOverlap.AddDynamic(this, &ADeepSeekR1AIInterface::OnInteractionSphereBeginOverlap);
-    //InteractionSphere->OnComponentEndOverlap.AddDynamic(this, &ADeepSeekR1AIInterface::OnInteractionSphereEndOverlap);
-
     RobInitialLocation = GetActorLocation();
 }
 
