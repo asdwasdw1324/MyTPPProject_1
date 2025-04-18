@@ -485,12 +485,12 @@ void AMyTPPProjectCharacter::RestartGameAfterDeath()
 	if (APlayerController* PC = Cast<APlayerController>(GetController()))
 	{
 		PC->RestartLevel();
+		// UGameplayStatics::OpenLevel(this, FName(*UGameplayStatics::GetCurrentLevelName(this)));
 		PC->bShowMouseCursor = false;
 		
 		FInputModeGameOnly InputMode;
 		InputMode.SetConsumeCaptureMouseDown(true);
 		PC->SetInputMode(InputMode);
-		// UGameplayStatics::OpenLevel(this, FName(*UGameplayStatics::GetCurrentLevelName(this)));
 	}
 }
 
