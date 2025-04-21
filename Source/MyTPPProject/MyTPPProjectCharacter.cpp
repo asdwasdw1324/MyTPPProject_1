@@ -188,9 +188,9 @@ void AMyTPPProjectCharacter::WuKongOnDeath()
 		UE_LOG(TPPCharacterLog, Error, TEXT("Player %s is dead!"), *GetNameSafe(this));
 
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-		if (Ensure(DeathAnim))
+		if (ensure(DeathAnim))
 		{
-			if (Ensure(AnimInstance))
+			if (ensure(AnimInstance))
 			{
 				USkeletalMesh* CharacterMesh = GetMesh()->GetSkeletalMeshAsset();
 				if (CharacterMesh && DeathAnim->GetSkeleton() != CharacterMesh->GetSkeleton())

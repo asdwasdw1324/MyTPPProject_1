@@ -8,6 +8,7 @@ void UPawnCombatComponent::RegisterSpawnedWeapon(FGameplayTag InWeaponTagToRegis
 {
 	check(InWeaponToRegister);
 
+	// Check if the weapon tag already exists in the TMap
 	if (WuKongCarriedWeaponsMap.Contains(InWeaponTagToRegister))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Weapon Tag %s already exists!"), *InWeaponTagToRegister.ToString());
@@ -21,6 +22,7 @@ void UPawnCombatComponent::RegisterSpawnedWeapon(FGameplayTag InWeaponTagToRegis
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *WeaponString);
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, WeaponString);
 	
+	// If bRegisterAsEquippedWeapon is true, set the CurrentEquippedWeaponTag to the new weapon tag
 	if (bRegisterAsEquippedWeapon)
 	{
 		if (InWeaponTagToRegister.IsValid())
@@ -49,6 +51,7 @@ void UPawnCombatComponent::UnRegisterSpawnedWeapon(FGameplayTag InWeaponTagToUnR
 		}
 		else
 		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("InWeaponTagToUnRegister is not unregistered: %s!"), *InWeaponTagToUnRegister.ToString());
 			UE_LOG(LogTemp, Warning, TEXT("Weapon with tag %s does not exist!"), *InWeaponTagToUnRegister.ToString());
 		}
 	}
@@ -62,7 +65,7 @@ AEnhancedEffectActor* UPawnCombatComponent::GetWuKongCarriedWeaponByTag(FGamepla
 {
 	if (WuKongCarriedWeaponsMap.Contains(InWeaponTagToGet))
 	{
-		if (AEnhancedEffectActor* const* FoundWeapon = WuKongCarriedWeaponsMap.Find(InWeaponTagToGet))
+		if (auto FoundWeapon = WuKongCarriedWeaponsMap.Find(InWeaponTagToGet))
 		{
 			return *FoundWeapon;
 		}
