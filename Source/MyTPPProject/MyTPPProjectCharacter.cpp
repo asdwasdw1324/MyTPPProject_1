@@ -118,6 +118,7 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 
 UAbilitySystemComponent* AMyTPPProjectCharacter::GetAbilitySystemComponent() const
 {
+	//返回的是UWuKongAbilitySystemComponent*类型，是函数返回类型UAbilitySystemComponent*的子类，这是否正确？
 	return GetWuKongAbilitySystemComponent();
 }
 
@@ -140,7 +141,8 @@ void AMyTPPProjectCharacter::PossessedBy(AController* NewController)
 }
 
 //After finishing normal attack, execute this function to reset normal attack boolean value, then we can do normal attack again
-void AMyTPPProjectCharacter::SetIsNormalAttack(UAnimMontage* Montage, bool bInterrupted)
+//This is for the target not to trigger the normal attack again during playing normal attack montage
+void AMyTPPProjectCharacter::SetIsNormalAttack(UAnimMontage* Montage, bool bInterrupted = false)
 {
 	if (Montage == NorAttackMontage && !bInterrupted)
 	{
@@ -183,6 +185,7 @@ void AMyTPPProjectCharacter::WuKongOnDeath()
 		{
 			return;
 		}
+		//更改角色状态并广播
 		CurrentState = EWuKongCharacterState::Dead;
 		OnCharacterStateChanged.Broadcast(CurrentState);
 		UE_LOG(TPPCharacterLog, Error, TEXT("Player %s is dead!"), *GetNameSafe(this));

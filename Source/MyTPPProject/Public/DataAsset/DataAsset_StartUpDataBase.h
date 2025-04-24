@@ -6,7 +6,6 @@
 #include "Engine/DataAsset.h"
 #include "DataAsset_StartUpDataBase.generated.h"
 
-
 class UWuKongGameplayAbility;
 class UWuKongAbilitySystemComponent;
 
