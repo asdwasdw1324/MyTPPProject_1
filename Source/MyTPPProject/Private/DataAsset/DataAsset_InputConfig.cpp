@@ -5,11 +5,11 @@
 
 UInputAction* UDataAsset_InputConfig::FindNativeInputActionByTag(const FGameplayTag& InInputTag) const
 {
-	for (const FWuKongInputActionConfig& InputActionConfig : NativeInputActions)
+	for (const FWuKongInputActionConfig& NativeInputAction : NativeInputActions)
 	{
-		if (InputActionConfig.InputTag == InInputTag && InputActionConfig.InputAction)
+		if (NativeInputAction.InputTag == InInputTag && NativeInputAction.InputAction)
 		{
-			return InputActionConfig.InputAction;
+			return NativeInputAction.InputAction;
 		}
 	}
 
@@ -18,11 +18,11 @@ UInputAction* UDataAsset_InputConfig::FindNativeInputActionByTag(const FGameplay
 
 UInputAction* UDataAsset_InputConfig::FindAbilityInputActionByTag(const FGameplayTag& InInputTag) const
 {
-	for (const FWuKongInputActionConfig& InputActionConfig : AbilityInputActions)
+	for (const FWuKongInputActionConfig& AbilityInputAction : AbilityInputActions)
 	{
-		if (InputActionConfig.InputTag == InInputTag && InputActionConfig.InputAction)
+		if (AbilityInputAction.InputTag == InInputTag && AbilityInputAction.InputAction)
 		{
-			return InputActionConfig.InputAction;
+			return AbilityInputAction.InputAction;
 		}
 	}
 	return nullptr;
