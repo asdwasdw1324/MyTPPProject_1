@@ -44,6 +44,6 @@ inline void UWuKongEnhancedInputComponent::BindAbilityInputAction(const UDataAss
 		if (!AbilityInputActionConfig.IsValid()) continue;
 		
 		BindAction(AbilityInputActionConfig.InputAction,ETriggerEvent::Started,ContextObject,InputPressedFunc,AbilityInputActionConfig.InputTag);
- 		BindAction(AbilityInputActionConfig.InputAction,ETriggerEvent::Completed,ContextObject,InputRelasedFunc,AbilityInputActionConfig.InputTag);
+ 		BindAction(AbilityInputActionConfig.InputAction,ETriggerEvent::Completed,ContextObject,InputReleasedFunc,AbilityInputActionConfig.InputTag);
 	}
 }
