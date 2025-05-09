@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "AbilitySystemInterface.h"
+#include "GameplayTagContainer.h"
 #include "MyTPPProjectCharacter.generated.h"
 
 class USpringArmComponent;
@@ -132,6 +133,7 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = Attack)
 	void ChargedAttack_Cancled();
 
+	/** Called for active enhanced attack status */
 	UFUNCTION(BlueprintCallable, Category = Attack)
 	void ActiveEnhancedAttackStatus();
 
@@ -142,6 +144,11 @@ protected:
 	/** Called for WuKongTeleport input */
 	UFUNCTION(BlueprintCallable)
 	void WuKongTeleport();
+
+	/** Called for gameplay ability system input */
+	void Input_AbilityInputPressed(FGameplayTag InInputTag);
+	void Input_AbilityInputReleased(FGameplayTag InInputTag);
+
 #pragma endregion
 	
 	/*Normal attack montage*/
@@ -185,6 +192,8 @@ public:
 	FORCEINLINE UHealthComponent* GetTppHealthComponent() const { return TppHealthComponent; }
 	/** Returns PowerComponent subObject **/
 	FORCEINLINE UPowerComponent* GetTppPowerComponent() const { return TppPowerComponent; }
+	/** Returns PawnCombatComponent subObject **/
+	FORCEINLINE UWuKongCombatComponent* GetWuKongCombatComponent() const { return WuKongCombatComponent; }
 	
 	UFUNCTION()
 	void OnHealthChangeFunc(AActor* InstigatorActor, UHealthComponent* OwningComp, float NewHealth, float Delta);

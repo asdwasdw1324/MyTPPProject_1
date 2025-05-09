@@ -6,7 +6,7 @@
 
 bool FWuKongHeroAbilitySet::IsValid() const
 {
-    return InputTag.IsValid() && !AbilityToGrant.IsEmpty();
+    return InputTag.IsValid() && AbilityToGrant;
 }
 
 void UDataAsset_WuKongStartUpDataBase::GiveToAbilitySystemComponent(UWuKongAbilitySystemComponent* ASCToGive, int32 ApplyLevel)
@@ -20,7 +20,7 @@ void UDataAsset_WuKongStartUpDataBase::GiveToAbilitySystemComponent(UWuKongAbili
         FGameplayAbilitySpec AbilitySpec(AbilitySet.AbilityToGrant);
         AbilitySpec.SourceObject = ASCToGive->GetAvatarActor();
         AbilitySpec.Level = ApplyLevel;
-        AbilitySpec.DynamicAbilityTags.AddTag(AbilitySet.InputTag);
+        AbilitySpec.GetDynamicSpecSourceTags().AddTag(AbilitySet.InputTag);
         
         ASCToGive->GiveAbility(AbilitySpec);
     }

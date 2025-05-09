@@ -40,8 +40,8 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 	PrimaryActorTick.bStartWithTickEnabled = false;
 
 	// 优化网络更新
-	NetUpdateFrequency = 60.0f;
-	MinNetUpdateFrequency = 30.0f;
+	//NetUpdateFrequency = 60.0f;
+	//MinNetUpdateFrequency = 30.0f;
 
 	// 优化碰撞设置
 	//GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
@@ -113,7 +113,7 @@ AMyTPPProjectCharacter::AMyTPPProjectCharacter()
 	WuKongAttributeSet = CreateDefaultSubobject<UWuKongAttributeSet>(TEXT("AttributeSet"));
 
 	//Create Combat component for the character
-	WuKongCombatComponent = CreateDefaultSubobject<UWuKongCombatComponent>(TEXT("CombatComp"));
+	WuKongCombatComponent = CreateDefaultSubobject<UWuKongCombatComponent>(TEXT("WuKongCombatComp"));
 }
 
 UAbilitySystemComponent* AMyTPPProjectCharacter::GetAbilitySystemComponent() const
@@ -201,7 +201,7 @@ void AMyTPPProjectCharacter::WuKongOnDeath()
 					GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("Death animation skeleton mismatch!"));
 					return;
 				}
-
+				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Death animation skeleton match!"));
 				AnimInstance->Montage_Play(DeathAnim);
 			}
 		}
@@ -309,7 +309,7 @@ void AMyTPPProjectCharacter::ActiveEnhancedAttackStatus()
 		}
 		else
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Magenta, FString::Printf(TEXT("CharacterData is null! %s"), *GetName()));
+			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("CharacterData is null! %s"), *GetName()));
 		}
 	}
 }
@@ -373,6 +373,16 @@ void AMyTPPProjectCharacter::WuKongTeleport()
 	}
 }
 
+void AMyTPPProjectCharacter::Input_AbilityInputPressed(FGameplayTag InInputTag)
+{
+	WuKongAbilitySystemComponent->OnAbilityInputPressed(InInputTag);
+}
+
+void AMyTPPProjectCharacter::Input_AbilityInputReleased(FGameplayTag InInputTag)
+{
+	WuKongAbilitySystemComponent->OnAbilityInputReleased(InInputTag);
+}
+
 //Heal power after attacking/teleport(doing anything consume power)
 void AMyTPPProjectCharacter::PowerHeal()
 {
@@ -427,6 +437,9 @@ void AMyTPPProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 
 		//EnhancedAttackDamage
 		WuKongEnhancedInputComponent->BindNativeInputAction(InputConfigDataAsset, WuKongGameplayTags::InputTag_EnhancedAttack, ETriggerEvent::Completed, this, &AMyTPPProjectCharacter::ActiveEnhancedAttackStatus);
+
+		//AbilityInputAction
+		WuKongEnhancedInputComponent->BindAbilityInputAction(InputConfigDataAsset, this, &ThisClass::Input_AbilityInputPressed, &ThisClass::Input_AbilityInputReleased);
 	} 
 	else
 	{

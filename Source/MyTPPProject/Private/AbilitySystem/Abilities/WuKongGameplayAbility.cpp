@@ -95,19 +95,13 @@ void UWuKongGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 
 UPawnCombatComponent* UWuKongGameplayAbility::GetPawnCombatComponentFromActorInfo() const
 {
-	if (!CurrentActorInfo)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("CurrentActorInfo is invalid!"));
-		return nullptr;
-	}
-
-	if (CurrentActorInfo->AvatarActor.IsValid())
+	
+	if (CurrentActorInfo && CurrentActorInfo->AvatarActor.IsValid())
 	{
 		//return Cast<UPawnCombatComponent>(CurrentActorInfo->AvatarActor->GetComponentByClass(UPawnCombatComponent::StaticClass()));
 		return GetAvatarActorFromActorInfo()->FindComponentByClass<UPawnCombatComponent>();
 	}
-
-	UE_LOG(LogTemp, Warning, TEXT("AvatarActor is invalid!"));
+	
 	return nullptr;
 }
 
@@ -119,7 +113,7 @@ UWuKongAbilitySystemComponent* UWuKongGameplayAbility::GetWuKongAbilitySystemCom
 		return nullptr;
 	}
 
-	return Cast<UWuKongAbilitySystemComponent>(CurrentActorInfo->AbilitySystemComponent.Get());
+	return Cast<UWuKongAbilitySystemComponent>(CurrentActorInfo->AbilitySystemComponent);
 	
 }
 

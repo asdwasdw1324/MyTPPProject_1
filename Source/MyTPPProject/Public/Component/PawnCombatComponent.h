@@ -34,5 +34,6 @@ public:
 	AEnhancedEffectActor* GetWuKongCurrentEquippedWeapon() const;
 
 private:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "WuKong|PawnCombat", meta = (AllowPrivateAccess = "true"))
 	TMap<FGameplayTag, AEnhancedEffectActor*> WuKongCarriedWeaponsMap;
 };

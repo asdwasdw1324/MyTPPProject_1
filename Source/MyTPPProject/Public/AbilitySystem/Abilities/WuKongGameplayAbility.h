@@ -37,10 +37,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "WuKongAbility")
 	EWuKongAbilityActivationPolicy AbilityActivationPolicy = EWuKongAbilityActivationPolicy::OnGiven;
 
-	UFUNCTION(BlueprintPure, Category = "WuKongAbility")
+	UFUNCTION(BlueprintPure, Category = "WuKong|Ability")
 	UPawnCombatComponent* GetPawnCombatComponentFromActorInfo() const;
 
-	UFUNCTION(BlueprintPure, Category = "WuKongAbility")
+	UFUNCTION(BlueprintPure, Category = "WuKong|Ability")
 	UWuKongAbilitySystemComponent* GetWuKongAbilitySystemComponentFromActorInfo() const;
 	
 	

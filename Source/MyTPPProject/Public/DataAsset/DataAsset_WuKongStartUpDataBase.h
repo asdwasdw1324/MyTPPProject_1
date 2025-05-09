@@ -16,7 +16,7 @@ struct FWuKongHeroAbilitySet
 	FGameplayTag InputTag;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TArray<TSubclassOf<UWuKongGameplayAbility>> AbilityToGrant;
+	TSubclassOf<UWuKongGameplayAbility> AbilityToGrant;
 
 	bool IsValid() const;
 };

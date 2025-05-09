@@ -6,21 +6,19 @@
 
 void UPawnCombatComponent::RegisterSpawnedWeapon(FGameplayTag InWeaponTagToRegister, AEnhancedEffectActor* InWeaponToRegister, bool bRegisterAsEquippedWeapon)
 {
-	check(InWeaponToRegister);
-
 	// Check if the weapon tag already exists in the TMap
-	if (WuKongCarriedWeaponsMap.Contains(InWeaponTagToRegister))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Weapon Tag %s already exists!"), *InWeaponTagToRegister.ToString());
-		return;
-	}
+	checkf(!WuKongCarriedWeaponsMap.Contains(InWeaponTagToRegister), TEXT("Weapon Tag: %s already exists!"), *InWeaponTagToRegister.ToString())
 
+	// Check if the weapon to register is valid
+	check(InWeaponToRegister)
+	
 	// Register the weapon to this TMap
 	WuKongCarriedWeaponsMap.Emplace(InWeaponTagToRegister, InWeaponToRegister);
 
+	// Print the weapon name and tag to the screen after registration
 	const FString WeaponString = FString::Printf(TEXT("A weapon named: %s has registered by the tag: %s"), *InWeaponToRegister->GetName(), *InWeaponTagToRegister.ToString());
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *WeaponString);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, WeaponString);
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple, WeaponString);
 	
 	// If bRegisterAsEquippedWeapon is true, set the CurrentEquippedWeaponTag to the new weapon tag
 	if (bRegisterAsEquippedWeapon)
@@ -28,7 +26,7 @@ void UPawnCombatComponent::RegisterSpawnedWeapon(FGameplayTag InWeaponTagToRegis
 		if (InWeaponTagToRegister.IsValid())
 		{
 			CurrentEquippedWeaponTag = InWeaponTagToRegister;
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("CurrentEquippedWeaponTag set to: %s"), *CurrentEquippedWeaponTag.ToString()));
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple, FString::Printf(TEXT("CurrentEquippedWeaponTag set to: %s"), *CurrentEquippedWeaponTag.ToString()));
 		}
 		else
 		{
@@ -40,25 +38,23 @@ void UPawnCombatComponent::RegisterSpawnedWeapon(FGameplayTag InWeaponTagToRegis
 
 void UPawnCombatComponent::UnRegisterSpawnedWeapon(FGameplayTag InWeaponTagToUnRegister)
 {
-	if (InWeaponTagToUnRegister.IsValid())
+	// Check the validity of InWeaponTagToUnRegister
+	checkf(!InWeaponTagToUnRegister.IsValid(), TEXT("InWeaponTagToUnRegister is invalid!"))
+
+	// Check if the weapon tag exists in the TMap
+	if (WuKongCarriedWeaponsMap.Contains(InWeaponTagToUnRegister))
 	{
-		if (WuKongCarriedWeaponsMap.Contains(InWeaponTagToUnRegister))
+		if (WuKongCarriedWeaponsMap.Remove(InWeaponTagToUnRegister) > 0)
 		{
-			if (WuKongCarriedWeaponsMap.Remove(InWeaponTagToUnRegister) > 0)
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString::Printf(TEXT("A weapon has been unregistered by the tag: %s"), *InWeaponTagToUnRegister.ToString()));
-			}
-		}
-		else
-		{
-			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("InWeaponTagToUnRegister is not unregistered: %s!"), *InWeaponTagToUnRegister.ToString());
-			UE_LOG(LogTemp, Warning, TEXT("Weapon with tag %s does not exist!"), *InWeaponTagToUnRegister.ToString());
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple, FString::Printf(TEXT("The weapon has been unregistered by the tag: %s"), *InWeaponTagToUnRegister.ToString()));
 		}
 	}
 	else
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("InWeaponTagToUnRegister is invalid!"));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple, TEXT("InWeaponTagToUnRegister is not unregistered before!"));
+		UE_LOG(LogTemp, Warning, TEXT("The Weapon with tag %s does not exist!"), *InWeaponTagToUnRegister.ToString());
 	}
+
 }
 
 AEnhancedEffectActor* UPawnCombatComponent::GetWuKongCarriedWeaponByTag(FGameplayTag InWeaponTagToGet) const

@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "PawnExtensionComponentBase.generated.h"
 
+//Provide some common help functions for both Hero and Enemy's PawnExtensionCombatComponent
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MYTPPPROJECT_API UPawnExtensionComponentBase : public UActorComponent
