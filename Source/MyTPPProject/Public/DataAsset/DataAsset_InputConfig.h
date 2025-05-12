@@ -14,11 +14,12 @@ USTRUCT(BlueprintType)
 struct FWuKongInputActionConfig
 {
 	GENERATED_BODY()
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (Categories = "InputTag"))
+
+public:	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (Categories = "Input|Tag"))
 	FGameplayTag InputTag;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,meta = (Categories = "Input|Action"))
 	TObjectPtr<UInputAction> InputAction;
 
 	bool IsValid() const
